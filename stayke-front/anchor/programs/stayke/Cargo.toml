@@ -1,0 +1,25 @@
+[package]
+name = "stayke"
+version = "0.1.0"
+description = ""
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "stayke"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "1.0.0-rc.3"
+anchor-spl = "1.0.0-rc.3"
+
+[dev-dependencies]
+litesvm = "=0.7.1"
+solana-sdk = "2.3"

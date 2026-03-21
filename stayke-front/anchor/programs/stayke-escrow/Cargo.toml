@@ -1,12 +1,12 @@
 [package]
-name = "vault"
+name = "stayke_scrow"
 version = "0.1.0"
-description = "A simple SOL vault program"
+description = ""
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "vault"
+name = "stayke_scrow"
 
 [features]
 default = []

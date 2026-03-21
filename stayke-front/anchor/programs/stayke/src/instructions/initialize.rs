@@ -121,6 +121,8 @@ pub fn register_user(ctx: Context<RegisterUser>, dni_hash: [u8; 32]) -> Result<(
         medium_infractions: 0,
         high_infractions: 0,
 
+        listing_count: 0,
+
         bump,
     };
 

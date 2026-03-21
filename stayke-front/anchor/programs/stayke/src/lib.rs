@@ -5,7 +5,7 @@ mod state;
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{transfer, Transfer};
 
-use instructions::{admin, initialize, user_profile};
+use instructions::{admin, initialize, properties, user_profile};
 
 use crate::state::UserProfile;
 
@@ -33,6 +33,15 @@ pub mod stayke {
 
     pub fn register_user(ctx: Context<initialize::RegisterUser>, dni_hash: [u8; 32]) -> Result<()> {
         initialize::register_user(ctx, dni_hash)
+    }
+
+    pub fn register_property(
+        ctx: Context<properties::InitProperty>,
+        dni_hash: [u8; 32],
+        listing_count: u8,
+        price_per_night: u64,
+    ) -> Result<()> {
+        properties::register_property(ctx, dni_hash, listing_count, price_per_night)
     }
 
     // ----------------------------------------------------------------------------------------

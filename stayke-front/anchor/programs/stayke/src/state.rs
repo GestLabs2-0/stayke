@@ -50,6 +50,8 @@ pub struct UserProfile {
     pub medium_infractions: u8,
     pub high_infractions: u8,
 
+    pub listing_count: u8, // Number of properties listed by the user, used to generate unique seeds for properties
+
     pub bump: u8, // Bump for PDA
 }
 
@@ -57,13 +59,12 @@ pub struct UserProfile {
 #[derive(InitSpace)]
 pub struct Property {
     pub host: Pubkey,
-    #[max_len(90)]
-    pub name: String,
+    pub listing_id: u8, // Unique identifier for the property, generated using the host's listing_count to ensure uniqueness per host
     pub price_per_night: u64,
     #[max_len(32)]
     pub hash_state: String,
-    pub booking_active: bool, // Indicates if the property is currently in an active booking to prevent modifications
-    pub bump: u8,             // Bump for PDA
+    pub booking_active: Option<Pubkey>, // Client booking this property is currently active with, if any. This is used to prevent modifications to the property while a booking is active.
+    pub bump: u8,                       // Bump for PDA
 }
 
 #[account]

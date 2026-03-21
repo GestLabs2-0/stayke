@@ -3,7 +3,7 @@ import { Shield } from "lucide-react";
 //Next
 import Image from "next/image";
 //Own components
-import { stats } from "../app/constants";
+import { stats } from "../constants";
 
 export const HeroSection = () => {
   return (

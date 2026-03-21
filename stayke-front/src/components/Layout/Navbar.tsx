@@ -10,7 +10,7 @@ import Link from "next/link";
 //Own Components
 import { WalletButton } from "../WalletButton";
 import { PhantomModal } from "./Modal/PhantomModal";
-import { navLinks } from "@/src/app/constants";
+import { navLinks } from "@/src/constants";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);

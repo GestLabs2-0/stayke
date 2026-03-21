@@ -17,6 +17,8 @@ pub struct PlatformConfig {
 
     pub minimum_deposit: u64,
 
+    pub is_initialized: bool, // To prevent re-initialization of the contract
+
     pub bump: u8,
 }
 

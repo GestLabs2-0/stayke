@@ -49,3 +49,23 @@ pub enum AdminErrors {
     #[msg("Unauthorized admin action")]
     Unauthorized,
 }
+
+#[error_code]
+pub enum ConfigErrors {
+    #[msg("Configuration already initialized")]
+    ConfigAlreadyInitialized,
+}
+
+#[error_code]
+pub enum DepositErrors {
+    #[msg("Deposit amount is below the minimum required")]
+    DepositTooLow,
+    #[msg("No active booking found for this user")]
+    NoActiveBooking,
+    #[msg("Only the client can make a deposit for their booking")]
+    UnauthorizedDeposit,
+    #[msg("The treasury account is not the expected one")]
+    InvalidTreasuryAccount,
+    #[msg("The token mint does not match the configured USDC mint")]
+    InvalidTokenMint,
+}

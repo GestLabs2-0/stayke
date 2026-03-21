@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 
+use crate::errors::ConfigErrors;
 use crate::state::{PlatformConfig, UserProfile};
 
 #[derive(Accounts)]
@@ -39,6 +40,11 @@ pub fn initialize_contract(
 ) -> Result<()> {
     let acc_config = &mut ctx.accounts.config;
 
+    require!(
+        !acc_config.is_initialized,
+        ConfigErrors::ConfigAlreadyInitialized
+    );
+
     let InitialConfig {
         admins,
         escrow_treasury,
@@ -60,6 +66,7 @@ pub fn initialize_contract(
         retribution_bps_low,
         treasury,
         usdc_mint,
+        is_initialized: true,
     };
 
     let mut all_admins = vec![ctx.accounts.signer.key()];

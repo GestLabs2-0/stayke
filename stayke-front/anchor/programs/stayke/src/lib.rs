@@ -1,9 +1,13 @@
+mod errors;
+mod instructions;
+mod state;
+
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{transfer, Transfer};
 
-use crate::state::UserProfile;
+use instructions::{admin, initialize};
 
-mod state;
+use crate::state::UserProfile;
 
 #[cfg(test)]
 mod tests;
@@ -13,25 +17,44 @@ declare_id!("BSX3yt7xpwNp8BtkJhDMv2Q1227pji3TpvSJWnnLENHg");
 #[program]
 pub mod stayke {
     use super::*;
-}
 
-#[derive(Accounts)]
-pub struct StaykeActions<'info> {
-    #[account(mut)]
-    pub signer: Signer<'info>,
-    #[account(
-        mut,
-        seeds = [b"vault", signer.key().as_ref()],
-        bump,
-    )]
-    pub vault: Account<'info, UserProfile>,
-    pub system_program: Program<'info, System>,
-}
+    // ----------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------
+    // --------------------------     INITIALIZE ACCOUNTS   -----------------------------------
+    // ----------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------
 
-#[error_code]
-pub enum VaultError {
-    #[msg("Vault already exists")]
-    VaultAlreadyExists,
-    #[msg("Invalid amount")]
-    InvalidAmount,
+    pub fn initialize_contract(
+        ctx: Context<initialize::InitializeContract>,
+        initial_data: initialize::InitialConfig,
+    ) -> Result<()> {
+        initialize::initialize_contract(ctx, initial_data)
+    }
+
+    pub fn register_user(ctx: Context<initialize::RegisterUser>, dni_hash: [u8; 32]) -> Result<()> {
+        initialize::register_user(ctx, dni_hash)
+    }
+
+    // ----------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------
+    // --------------------------     HOST FUNCTIONS        -----------------------------------
+    // ----------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------
+
+    // ----------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------
+    // --------------------------     ADMIN FUNCTIONS       -----------------------------------
+    // ----------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------
+
+    pub fn add_admin(ctx: Context<admin::AddRemoveAdmin>, new_admin: Pubkey) -> Result<()> {
+        admin::add_admin(ctx, new_admin)
+    }
+
+    pub fn remove_admin(
+        ctx: Context<admin::AddRemoveAdmin>,
+        admin_to_remove: Pubkey,
+    ) -> Result<()> {
+        admin::remove_admin(ctx, admin_to_remove)
+    }
 }

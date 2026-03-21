@@ -2,6 +2,26 @@ use anchor_lang::prelude::*;
 
 #[account]
 #[derive(InitSpace)]
+pub struct PlatformConfig {
+    #[max_len(10)]
+    pub admins: Vec<Pubkey>,
+
+    pub treasury: Pubkey,
+    pub escrow_treasury: Pubkey,
+
+    pub usdc_mint: Pubkey,
+
+    pub retribution_bps_low: u16,
+    pub retribution_bps_medium: u16,
+    pub retribution_bps_high: u16,
+
+    pub minimum_deposit: u64,
+
+    pub bump: u8,
+}
+
+#[account]
+#[derive(InitSpace)]
 pub struct UserProfile {
     pub owner: Pubkey, // The user's wallet address and manager of the profile
     pub deposit: u64,
@@ -11,10 +31,13 @@ pub struct UserProfile {
 
     pub is_banned: bool,
 
-    pub booking_active: bool, // Indicates if the user is currently in an active booking as client or host to prevent modifications
+    pub active_booking: Option<Pubkey>, // Indicates if the user is currently in an active booking as client or host to prevent modifications
 
-    pub reviews: u32,       // Number of reviews received
-    pub total_reviews: u64, // Total score from reviews (e.g., sum of ratings)
+    pub host_reviews: u32,     // Number of reviews received as host
+    pub total_score_host: u64, // Total score from reviews (e.g., sum of ratings)
+
+    pub client_reviews: u32,     // Number of reviews received as client
+    pub total_score_client: u64, // Total score from reviews (e.g., sum of ratings)
 
     pub hosted_stays: u32,    // Number of stays hosted
     pub completed_stays: u32, // Number of stays completed as a guest

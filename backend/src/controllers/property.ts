@@ -5,7 +5,6 @@ import type {
 import type { RequestValidatedAPI, ResponseAPI } from "../typescript/express.js";
 
 import { getPropertyRepository } from "../database/repositories/PropertyRepository.js";
-import { getUserRepository } from "../database/repositories/UserRepository.js";
 import { responseAndLogger } from "../utils/responseAndLogger.js";
 
 // ─── POST /api/v1/properties ────────────────────────────────────────────────
@@ -19,32 +18,26 @@ export const createProperty = async (
   res: ResponseAPI,
 ): Promise<void> => {
   try {
-    const userRepo = getUserRepository();
     const propRepo = getPropertyRepository();
-
     const { comentarios, images, latitud, longitud, nombre, ownerWallet, pdaKey, pricePerNight, ubicacion } =
       req.body;
 
-    // PDAs are unique identifiers on-chain, should be unique in DB too
+    // PDAs are unique identifiers on-chain, must be unique in DB too
+    // (middleware only validates format, not uniqueness)
     const existingPda = await propRepo.findOne({ where: { pdaKey } });
     if (existingPda) {
       responseAndLogger(res, "Ya existe una propiedad registrada con esta clave PDA", 409);
       return;
     }
 
-    const owner = await userRepo.findOne({ where: { wallet: ownerWallet } });
-    if (!owner) {
-      responseAndLogger(res, "Dueño no encontrado", 404);
-      return;
-    }
-
+    // owner existence is already validated by createPropertyRule middleware
     const property = propRepo.create({
       comentarios,
       images,
       latitud,
       longitud,
       nombre,
-      owner,
+      owner: { wallet: ownerWallet },
       pdaKey,
       pricePerNight,
       ubicacion,
@@ -114,19 +107,18 @@ export const listPropertiesByUser = async (
  * Ownership and AVAILABLE status check are already done in middleware.
  */
 export const updateProperty = async (
-  req: RequestValidatedAPI<Partial<CreatePropertyBody> & PropertyActionBody, { id: string }>,
+  req: RequestValidatedAPI<Partial<Omit<CreatePropertyBody, "ownerWallet" | "pdaKey">> & PropertyActionBody, { id: string }>,
   res: ResponseAPI,
 ): Promise<void> => {
   try {
     const propRepo = getPropertyRepository();
     const { id } = req.params;
+    // ownerWallet and pdaKey are intentionally excluded — they are immutable after creation
+    // property existence and ownership are already validated by propertyOwnershipAndStatusRule
     const { comentarios, images, latitud, longitud, nombre, pricePerNight, ubicacion } = req.body;
 
-    const property = await propRepo.findOne({ where: { id } });
-    if (!property) {
-      responseAndLogger(res, "Propiedad no encontrada", 404);
-      return;
-    }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const property = (await propRepo.findOne({ where: { id } }))!;
 
     if (nombre !== undefined) property.nombre = nombre;
     if (pricePerNight !== undefined) property.pricePerNight = pricePerNight;
@@ -158,11 +150,9 @@ export const deleteProperty = async (
     const propRepo = getPropertyRepository();
     const { id } = req.params;
 
-    const property = await propRepo.findOne({ where: { id } });
-    if (!property) {
-      responseAndLogger(res, "Propiedad no encontrada", 404);
-      return;
-    }
+    // property existence and ownership are already validated by propertyOwnershipAndStatusRule
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const property = (await propRepo.findOne({ where: { id } }))!;
 
     await propRepo.remove(property);
     responseAndLogger(res, "Propiedad eliminada exitosamente", 200);

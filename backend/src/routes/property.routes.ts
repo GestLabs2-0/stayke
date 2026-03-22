@@ -1,16 +1,7 @@
 import { Router } from "express";
 
-import {
-  createProperty,
-  deleteProperty,
-  listAllProperties,
-  listPropertiesByUser,
-  updateProperty,
-} from "../controllers/property.js";
-import {
-  createPropertyRule,
-  propertyOwnershipAndStatusRule,
-} from "../middlewares/property.middleware.js";
+import { createProperty, deleteProperty, listAllProperties, listPropertiesByUser, updateProperty } from "../controllers/property.js";
+import { createPropertyRule, propertyOwnershipAndStatusRule } from "../middlewares/property.middleware.js";
 
 const router = Router();
 
@@ -30,7 +21,7 @@ router.get("/", listAllProperties);
  * GET /api/v1/properties/user/:wallet
  * List all properties belonging to a specific user wallet.
  */
-router.get("/user/:wallet", listPropertiesByUser);
+router.get("/:wallet", listPropertiesByUser);
 
 /**
  * PUT /api/v1/properties/:id

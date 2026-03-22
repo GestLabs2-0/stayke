@@ -20,11 +20,11 @@ export class User extends CoreEntity {
   @Column(() => DatedEntity, { prefix: false })
   dated: DatedEntity;
 
-  @Column({ length: 20, nullable: true, type: "varchar", unique: true })
-  dni?: string;
+  @Column({ length: 20, type: "varchar", unique: true })
+  dni: string;
 
-  @Column({ length: 150, nullable: true, type: "varchar" })
-  email?: string;
+  @Column({ length: 150, type: "varchar" })
+  email: string;
 
   @OneToMany(() => Penalty, (penalty: Penalty) => penalty.host)
   hostPenalties: Penalty[];

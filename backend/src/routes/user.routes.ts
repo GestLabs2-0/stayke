@@ -5,6 +5,7 @@ import {
   createUser,
   deleteUser,
   getUserByWallet,
+  listAllUsers,
   updateUser,
 } from "../controllers/user.js";
 import {
@@ -16,6 +17,12 @@ import {
 } from "../middlewares/user.middleware.js";
 
 const router = Router();
+
+/**
+ * GET /api/v1/users
+ * List all users.
+ */
+router.get("/", listAllUsers);
 
 /**
  * POST /api/v1/users

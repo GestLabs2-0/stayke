@@ -146,8 +146,10 @@ export const getUserByWalletRule = (
 export interface UpdateUserBody {
   address?: string;
   apellido?: string;
-  dni?: string;
-  email?: string;
+  /** Required — cannot be removed once set */
+  dni: string;
+  /** Required — cannot be removed once set */
+  email: string;
   nombre?: string;
   phone?: string;
   profileImage?: string;
@@ -178,7 +180,7 @@ export const updateUserRule = async (
   const { address, apellido, dni, email, nombre, phone, requesterWallet } = req.body;
   const errors: Record<string, string> = {};
 
-  // requesterWallet — obligatorio (identifica quién hace la petición)
+  // requesterWallet — obligatorio
   const requesterError = validateStringField(requesterWallet, {
     fieldName: "La wallet del solicitante (requesterWallet)",
     isRequired: true,
@@ -188,7 +190,25 @@ export const updateUserRule = async (
   });
   if (requesterError) errors.requesterWallet = requesterError;
 
-  // Validate optional editable fields
+  // email — obligatorio, no puede ser vacío
+  const emailError = validateStringField(email, {
+    fieldName: "El email",
+    isRequired: true,
+    maxLength: 150,
+    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    patternMessage: "El email no tiene un formato válido",
+  });
+  if (emailError) errors.email = emailError;
+
+  // dni — obligatorio, no puede ser vacío
+  const dniError = validateStringField(dni, {
+    fieldName: "El DNI",
+    isRequired: true,
+    maxLength: 20,
+  });
+  if (dniError) errors.dni = dniError;
+
+  // Validate other optional editable fields
   if (nombre !== undefined) {
     const err = validateStringField(nombre, { fieldName: "El nombre", maxLength: 100 });
     if (err) errors.nombre = err;
@@ -197,22 +217,9 @@ export const updateUserRule = async (
     const err = validateStringField(apellido, { fieldName: "El apellido", maxLength: 100 });
     if (err) errors.apellido = err;
   }
-  if (email !== undefined) {
-    const err = validateStringField(email, {
-      fieldName: "El email",
-      maxLength: 150,
-      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-      patternMessage: "El email no tiene un formato válido",
-    });
-    if (err) errors.email = err;
-  }
   if (phone !== undefined) {
     const err = validateStringField(phone, { fieldName: "El teléfono", maxLength: 20 });
     if (err) errors.phone = err;
-  }
-  if (dni !== undefined) {
-    const err = validateStringField(dni, { fieldName: "El DNI", maxLength: 20 });
-    if (err) errors.dni = err;
   }
   if (address !== undefined) {
     const err = validateStringField(address, { fieldName: "La dirección", maxLength: 300 });

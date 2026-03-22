@@ -10,13 +10,22 @@ import { properties } from "../constants";
 
 export const MapSection = () => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<unknown>(null);
+  const mapInstance = useRef<L.Map | null>(null);
 
   useEffect(() => {
-    if (!mapRef.current || mapInstance.current) return;
+    if (!mapRef.current) return;
+
+    if (mapInstance.current) {
+      mapInstance.current.remove();
+      mapInstance.current = null;
+    }
+
+    let cancelled = false;
 
     import("leaflet").then((L) => {
-      const map = L.map(mapRef.current!, {
+      if (cancelled || !mapRef.current) return;
+
+      const map = L.map(mapRef.current, {
         center: [20, 0],
         zoom: 2,
         zoomControl: false,
@@ -63,8 +72,9 @@ export const MapSection = () => {
     });
 
     return () => {
+      cancelled = true;
       if (mapInstance.current) {
-        (mapInstance.current as L.Map).remove();
+        mapInstance.current.remove();
         mapInstance.current = null;
       }
     };

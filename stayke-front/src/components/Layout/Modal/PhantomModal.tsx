@@ -8,7 +8,11 @@ import { useState, useEffect, useRef } from "react";
 //Next
 import Image from "next/image";
 import Link from "next/link";
-//Own components
+//Router
+import { useRouter } from "next/navigation";
+//Context
+import { useAuth } from "@/src/Context/AuthContext";
+//Types
 import {
   PhantomModalProps,
   StatusWalletPhantom,
@@ -18,6 +22,8 @@ export const PhantomModal = ({ onClose }: PhantomModalProps) => {
   const { connectors, connect } = useWalletConnection();
   const [status, setStatus] = useState<StatusWalletPhantom>("idle");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { login } = useAuth();
+  const router = useRouter();
 
   const phantomWallet = connectors.find(
     (c) => c.name.toLowerCase() === "phantom"
@@ -43,9 +49,18 @@ export const PhantomModal = ({ onClose }: PhantomModalProps) => {
     try {
       await connect(phantomWallet.id);
 
-      if (!didTimeout.value) {
-        clearTimeout(timeoutRef.current!);
-        onClose();
+      if (didTimeout.value) return;
+      clearTimeout(timeoutRef.current!);
+
+      // ── Verifica si está registrado ───────────────────────────────────
+      const address = (window as any)?.phantom?.solana?.publicKey?.toString();
+      const { registered } = await login(address ?? "", "", "");
+      console.log("registered:", registered);
+
+      onClose();
+
+      if (!registered) {
+        router.push("/register");
       }
     } catch {
       if (!didTimeout.value) {
@@ -55,9 +70,7 @@ export const PhantomModal = ({ onClose }: PhantomModalProps) => {
     }
   };
 
-  const handleRetry = () => {
-    setStatus("idle");
-  };
+  const handleRetry = () => setStatus("idle");
 
   return (
     <div
@@ -68,7 +81,6 @@ export const PhantomModal = ({ onClose }: PhantomModalProps) => {
         className="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-card mx-4"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close */}
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-muted-foreground hover:text-foreground transition-colors"
@@ -76,7 +88,6 @@ export const PhantomModal = ({ onClose }: PhantomModalProps) => {
           <X className="h-5 w-5 cursor-pointer hover:text-primary" />
         </button>
 
-        {/* Header */}
         <div className="mb-6 text-center">
           <h2 className="font-display text-lg font-bold text-foreground">
             Connect Wallet
@@ -86,7 +97,6 @@ export const PhantomModal = ({ onClose }: PhantomModalProps) => {
           </p>
         </div>
 
-        {/* Error state */}
         {status === "error" && (
           <div className="mb-4 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3">
             <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
@@ -102,14 +112,12 @@ export const PhantomModal = ({ onClose }: PhantomModalProps) => {
           </div>
         )}
 
-        {/* Phantom button */}
         {phantomWallet ? (
           <button
             onClick={status === "error" ? handleRetry : handleConnect}
             disabled={status === "connecting"}
             className="flex w-full items-center gap-4 rounded-xl border border-border bg-background px-4 py-3 transition-all hover:border-primary hover:shadow-glow disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {/* Icon */}
             <div className="relative h-9 w-9 shrink-0">
               <Image
                 width={36}
@@ -136,7 +144,6 @@ export const PhantomModal = ({ onClose }: PhantomModalProps) => {
               </p>
             </div>
 
-            {/* Indicador derecho */}
             {status === "idle" && (
               <div className="h-2 w-2 rounded-full bg-emerald-400" />
             )}
@@ -172,7 +179,6 @@ export const PhantomModal = ({ onClose }: PhantomModalProps) => {
   );
 };
 
-// Contador regresivo visible
 const CountDown = ({
   seconds,
   onComplete,
@@ -181,7 +187,6 @@ const CountDown = ({
   onComplete: () => void;
 }) => {
   const [count, setCount] = useState(seconds);
-
   useEffect(() => {
     if (count <= 0) {
       onComplete();
@@ -190,6 +195,5 @@ const CountDown = ({
     const t = setTimeout(() => setCount((c) => c - 1), 1000);
     return () => clearTimeout(t);
   }, [count, onComplete]);
-
   return <>{count}s</>;
 };

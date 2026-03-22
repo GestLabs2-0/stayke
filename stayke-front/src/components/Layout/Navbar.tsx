@@ -1,20 +1,96 @@
 "use client";
 
-//Librarys
-import { Menu, X, Shield } from "lucide-react";
-//React
-import { useState } from "react";
+//Library
+import {
+  Menu,
+  X,
+  Shield,
+  User,
+  PlusSquare,
+  LogOut,
+  ChevronDown,
+} from "lucide-react";
+import { useWalletConnection } from "@solana/react-hooks";
+
 //Next
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
+//React
+import { useState } from "react";
 //Own Components
 import { WalletButton } from "../WalletButton";
 import { PhantomModal } from "./Modal/PhantomModal";
-import { navLinks } from "../../constants";
+import { navLinks } from "@/src/constants";
+import { useAuth } from "@/src/Context/AuthContext";
+
+const UserMenu = () => {
+  const { user, logout } = useAuth();
+  const { disconnect } = useWalletConnection();
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  const handleLogout = () => {
+    disconnect();
+    logout();
+    setOpen(false);
+    router.push("/");
+  };
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground hover:border-primary transition-colors"
+      >
+        <div className="flex h-6 w-6 items-center justify-center rounded-full gradient-solana shrink-0">
+          <User className="h-3.5 w-3.5 text-primary-foreground" />
+        </div>
+        <span>{user?.firstName}</span>
+        <ChevronDown className="h-3 w-3 text-muted-foreground" />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-2 w-52 rounded-xl border border-border bg-card p-1 shadow-card z-50">
+          <Link
+            href="/profile"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <User className="h-3.5 w-3.5" />
+            My Profile
+          </Link>
+
+          {user?.isHost && (
+            <Link
+              href="/listPropertys"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <PlusSquare className="h-3.5 w-3.5" />
+              List Property
+            </Link>
+          )}
+
+          <div className="my-1 border-t border-border" />
+
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-muted transition-colors"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            Disconnect
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const Navbar = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [showModal, setShowModal] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const { isRegistered } = useAuth();
 
   return (
     <>
@@ -43,9 +119,13 @@ export const Navbar = () => {
             ))}
           </div>
 
-          {/* Desktop Actions */}
+          {/* Desktop Actions — wallet o perfil */}
           <div className="hidden items-center gap-3 md:flex">
-            <WalletButton onOpenModal={() => setShowModal(true)} />
+            {isRegistered ? (
+              <UserMenu />
+            ) : (
+              <WalletButton onOpenModal={() => setShowModal(true)} />
+            )}
           </div>
 
           {/* Mobile Toggle */}
@@ -75,18 +155,29 @@ export const Navbar = () => {
                 {item.label}
               </Link>
             ))}
-            {/* Wallet en mobile */}
-            <WalletButton
-              onOpenModal={() => {
-                setShowModal(true);
-                setIsOpen(false);
-              }}
-            />
+            <div className="pt-2 border-t border-border">
+              {isRegistered ? (
+                <Link
+                  href="/profile"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <User className="h-4 w-4" />
+                  My Profile
+                </Link>
+              ) : (
+                <WalletButton
+                  onOpenModal={() => {
+                    setShowModal(true);
+                    setIsOpen(false);
+                  }}
+                />
+              )}
+            </div>
           </div>
         </div>
       </nav>
 
-      {/* Modal */}
       {showModal && <PhantomModal onClose={() => setShowModal(false)} />}
     </>
   );

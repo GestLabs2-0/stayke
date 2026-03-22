@@ -3,20 +3,20 @@ use anchor_lang::prelude::*;
 use crate::{errors::StaykeErrors, state::{Property, UserProfile}};
 
 #[derive(Accounts)]
-#[instruction(dni_hash: [u8; 32], listing_count: u8)]
 pub struct InitProperty<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
     #[account(
         mut,
-        seeds = [b"user", dni_hash.as_ref()],
-        bump,
+        seeds = [b"user", user_profile.dni.as_ref()],
+        constraint = signer.key() == user_profile.owner @ StaykeErrors::UnauthorizedHost,
+        bump = user_profile.bump,
     )]
     pub user_profile: Account<'info, UserProfile>,
 
     #[account(init, 
-        seeds = [b"property", user_profile.key().as_ref(), listing_count.to_ne_bytes().as_ref()], 
+        seeds = [b"property", user_profile.key().as_ref(), user_profile.listing_count.to_ne_bytes().as_ref()], 
         bump, 
         payer = signer, 
         space = 8 + Property::INIT_SPACE)]
@@ -25,7 +25,7 @@ pub struct InitProperty<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn register_property(ctx: Context<InitProperty>, dni_hash: [u8; 32], listing_count: u8, price_per_night: u64) -> Result<()> {
+pub fn ins_register_property(ctx: Context<InitProperty>,   price_per_night: u64) -> Result<()> {
     let property_acc = &mut ctx.accounts.property;
     let user_profile = &mut ctx.accounts.user_profile;
     let bump = ctx.bumps.property;
@@ -36,7 +36,7 @@ pub fn register_property(ctx: Context<InitProperty>, dni_hash: [u8; 32], listing
     );
 
     let property = Property {
-        listing_id: listing_count,
+        listing_id: user_profile.listing_count,
         price_per_night,
         booking_active: None,
         hash_state: String::new(),
@@ -53,42 +53,31 @@ pub fn register_property(ctx: Context<InitProperty>, dni_hash: [u8; 32], listing
 
 
 #[derive(Accounts)]
-#[instruction(dni_hash: [u8;32], listing_count: u8)]
 pub struct ModifyProperty<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
     #[account(
         mut,
-        seeds = [b"user", dni_hash.as_ref()],
-        bump,
+        seeds = [b"user", user_profile.dni.as_ref()],
+        constraint = signer.key() == user_profile.owner @ StaykeErrors::UnauthorizedHost,
+        constraint = user_profile.listing_count > 0 @ StaykeErrors::NoPropertiesToModify,
+        bump = user_profile.bump,
     )]
     pub user_profile: Account<'info, UserProfile>,
 
     #[account(mut, 
-        seeds = [b"property", user_profile.key().as_ref(), listing_count.to_ne_bytes().as_ref()], 
-        bump)]
+        seeds = [b"property", user_profile.key().as_ref(), property.listing_id.to_ne_bytes().as_ref()],
+        constraint = property.booking_active.is_none() @ StaykeErrors::PropertyInActiveBooking, 
+        constraint = property.host == user_profile.key() @ StaykeErrors::UnauthorizedHost,
+        bump = property.bump
+    )]
     pub property: Account<'info, Property>,
 }
 
-pub fn update_property_price(ctx: Context<ModifyProperty>, _dni_hash: [u8; 32], listing_count: u8, new_price_per_night: u64) -> Result<()> {
+pub fn ins_update_property_price(ctx: Context<ModifyProperty>, new_price_per_night: u64) -> Result<()> {
     let property = &mut ctx.accounts.property;
     let user_profile = &ctx.accounts.user_profile;
-
-    require!(
-        ctx.accounts.signer.key == &user_profile.owner,
-        StaykeErrors::UnauthorizedHost
-    );
-
-    require!(
-        property.host == user_profile.key(),
-        StaykeErrors::PropertyInActiveBooking
-    );
-
-    require!(
-        property.booking_active.is_none(),
-        StaykeErrors::PropertyInActiveBooking
-    );
 
     property.price_per_night = new_price_per_night;
 

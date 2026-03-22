@@ -4,11 +4,8 @@ pub mod state;
 pub mod utils;
 
 use anchor_lang::prelude::*;
-use anchor_lang::system_program::{transfer, Transfer};
 
 use instructions::{admin::*, initialize::*, properties::*, user_profile::*};
-
-use crate::state::*;
 
 #[cfg(test)]
 mod tests;
@@ -29,20 +26,15 @@ pub mod stayke {
         ctx: Context<InitializeContract>,
         initial_data: InitialConfig,
     ) -> Result<()> {
-        initialize_contract(ctx, initial_data)
+        ins_initialize_contract(ctx, initial_data)
     }
 
     pub fn register_user(ctx: Context<RegisterUser>, dni_hash: [u8; 32]) -> Result<()> {
-        register_user(ctx, dni_hash)
+        ins_register_user(ctx, dni_hash)
     }
 
-    pub fn register_property(
-        ctx: Context<InitProperty>,
-        dni_hash: [u8; 32],
-        listing_count: u8,
-        price_per_night: u64,
-    ) -> Result<()> {
-        register_property(ctx, dni_hash, listing_count, price_per_night)
+    pub fn register_property(ctx: Context<InitProperty>, price_per_night: u64) -> Result<()> {
+        ins_register_property(ctx, price_per_night)
     }
 
     // ----------------------------------------------------------------------------------------
@@ -53,11 +45,9 @@ pub mod stayke {
 
     pub fn update_property_price(
         ctx: Context<ModifyProperty>,
-        dni_hash: [u8; 32],
-        listing_count: u8,
         new_price_per_night: u64,
     ) -> Result<()> {
-        update_property_price(ctx, dni_hash, listing_count, new_price_per_night)
+        ins_update_property_price(ctx, new_price_per_night)
     }
 
     // ----------------------------------------------------------------------------------------
@@ -66,13 +56,8 @@ pub mod stayke {
     // ----------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------
 
-    pub fn deposit_funds(
-        ctx: Context<Deposit>,
-        dni_hash: [u8; 32],
-        amount: u64,
-        decimals: u8,
-    ) -> Result<()> {
-        deposit(ctx, dni_hash, amount, decimals)
+    pub fn deposit_funds(ctx: Context<Deposit>, amount: u64, decimals: u8) -> Result<()> {
+        ins_deposit(ctx, amount, decimals)
     }
 
     pub fn set_host_status(
@@ -80,7 +65,7 @@ pub mod stayke {
         dni_hash: [u8; 32],
         status: bool,
     ) -> Result<()> {
-        set_host_status(ctx, dni_hash, status)
+        ins_set_host_status(ctx, dni_hash, status)
     }
 
     // ----------------------------------------------------------------------------------------
@@ -90,10 +75,10 @@ pub mod stayke {
     // ----------------------------------------------------------------------------------------
 
     pub fn add_admin(ctx: Context<AddRemoveAdmin>, new_admin: Pubkey) -> Result<()> {
-        add_admin(ctx, new_admin)
+        ins_add_admin(ctx, new_admin)
     }
 
     pub fn remove_admin(ctx: Context<AddRemoveAdmin>, admin_to_remove: Pubkey) -> Result<()> {
-        remove_admin(ctx, admin_to_remove)
+        ins_remove_admin(ctx, admin_to_remove)
     }
 }

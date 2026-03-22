@@ -1,3 +1,6 @@
+use anchor_lang::prelude::*;
+
+#[derive(InitSpace, AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct DateComponents {
     pub year: u32,
     pub month: u32,
@@ -25,5 +28,22 @@ pub fn derive_date(unix_timestamp: i64) -> DateComponents {
         month,
         day,
         year_month: year * 100 + month,
+    }
+}
+
+// I just don't want to send the year and month separately every time I want to do a booking, so I can derive it from the timestamp and use it to find the right BookingDays account
+pub trait TimestampExt {
+    fn to_date(&self) -> DateComponents;
+    fn year_month(&self) -> u32;
+}
+
+impl TimestampExt for i64 {
+    fn to_date(&self) -> DateComponents {
+        derive_date(*self)
+    }
+
+    fn year_month(&self) -> u32 {
+        let date = derive_date(*self);
+        date.year * 100 + date.month
     }
 }

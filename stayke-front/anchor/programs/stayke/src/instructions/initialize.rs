@@ -34,7 +34,7 @@ pub struct InitialConfig {
     pub usdc_mint: Pubkey,
 }
 
-pub fn initialize_contract(
+pub fn ins_initialize_contract(
     ctx: Context<InitializeContract>,
     initial_data: InitialConfig,
 ) -> Result<()> {
@@ -92,7 +92,7 @@ pub struct RegisterUser<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn register_user(ctx: Context<RegisterUser>, dni_hash: [u8; 32]) -> Result<()> {
+pub fn ins_register_user(ctx: Context<RegisterUser>, dni_hash: [u8; 32]) -> Result<()> {
     let user_acc = &mut ctx.accounts.user_profile;
     let bump = ctx.bumps.user_profile;
 

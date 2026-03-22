@@ -29,6 +29,8 @@ pub enum StaykeErrors {
     PropertyInActiveBooking,
     #[msg("Only the host can modify their property")]
     UnauthorizedHost,
+    #[msg("No properties to modify")]
+    NoPropertiesToModify,
 
     // BookingErrors
     #[msg("Booking already exists for this property")]
@@ -45,6 +47,8 @@ pub enum StaykeErrors {
     InvalidBookingDates,
     #[msg("Dates already booked for this property")]
     DatesAlreadyBooked,
+    #[msg("Invalid booking days account for the given dates")]
+    InvalidBookingDaysAccount,
 
     // DisputeErrors
     #[msg("Dispute already exists for this booking")]
@@ -63,6 +67,14 @@ pub enum StaykeErrors {
     // ConfigErrors
     #[msg("Configuration already initialized")]
     ConfigAlreadyInitialized,
+    #[msg("Max admins reached")]
+    MaxAdminsReached,
+    #[msg("Cannot remove self from admins")]
+    CannotRemoveSelf,
+    #[msg("At least one admin is required")]
+    AtLeastOneAdminRequired,
+    #[msg("Admin to remove not found")]
+    AdminNotFound,
 
     // DepositErrors
     #[msg("Deposit amount is below the minimum required")]

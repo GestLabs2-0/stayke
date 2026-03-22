@@ -1,6 +1,9 @@
 use anchor_lang::prelude::*;
 
-use crate::{errors::StaykeErrors, state::PlatformConfig};
+use crate::{
+    errors::StaykeErrors,
+    state::{PlatformConfig, MAX_ADMINS},
+};
 
 #[derive(Accounts)]
 pub struct AddRemoveAdmin<'info> {
@@ -9,17 +12,18 @@ pub struct AddRemoveAdmin<'info> {
     #[account(
         mut,
         seeds = [b"config"],
-        bump,
+        constraint = config.admins.contains(&signer.key()) @ StaykeErrors::UnauthorizedAdmin,
+        bump = config.bump,
     )]
     pub config: Account<'info, PlatformConfig>,
 }
 
-pub fn add_admin(ctx: Context<AddRemoveAdmin>, new_admin: Pubkey) -> Result<()> {
+pub fn ins_add_admin(ctx: Context<AddRemoveAdmin>, new_admin: Pubkey) -> Result<()> {
     let config = &mut ctx.accounts.config;
 
     require!(
-        config.admins.contains(&ctx.accounts.signer.key()),
-        StaykeErrors::UnauthorizedAdmin
+        config.admins.len() < MAX_ADMINS,
+        StaykeErrors::MaxAdminsReached
     );
 
     if !config.admins.contains(&new_admin) {
@@ -29,16 +33,23 @@ pub fn add_admin(ctx: Context<AddRemoveAdmin>, new_admin: Pubkey) -> Result<()> 
     Ok(())
 }
 
-pub fn remove_admin(ctx: Context<AddRemoveAdmin>, admin_to_remove: Pubkey) -> Result<()> {
+pub fn ins_remove_admin(ctx: Context<AddRemoveAdmin>, admin_to_remove: Pubkey) -> Result<()> {
     let config = &mut ctx.accounts.config;
 
     require!(
-        config.admins.contains(&ctx.accounts.signer.key()),
-        StaykeErrors::UnauthorizedAdmin
+        admin_to_remove != ctx.accounts.signer.key(),
+        StaykeErrors::CannotRemoveSelf
+    );
+
+    require!(
+        config.admins.len() > 1,
+        StaykeErrors::AtLeastOneAdminRequired
     );
 
     if let Some(pos) = config.admins.iter().position(|x| *x == admin_to_remove) {
         config.admins.remove(pos);
+    } else {
+        return err!(StaykeErrors::AdminNotFound);
     }
 
     Ok(())

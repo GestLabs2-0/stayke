@@ -1,9 +1,11 @@
 use anchor_lang::prelude::*;
 
+pub const MAX_ADMINS: usize = 10;
+
 #[account]
 #[derive(InitSpace)]
 pub struct PlatformConfig {
-    #[max_len(10)]
+    #[max_len(MAX_ADMINS)]
     pub admins: Vec<Pubkey>,
 
     pub treasury: Pubkey,
@@ -69,11 +71,13 @@ pub struct Property {
 
 #[account]
 #[derive(InitSpace)]
-pub struct BookingList {
+pub struct BookingDays {
     pub property: Pubkey,
     pub occupied_days: u32, // We are performing bitwise operations with this, so we can only support up to 32 days per month. This is a reasonable assumption for a booking system.
-    pub month: u8,
-    pub year: u16,
+    pub month: u32,
+    pub year: u32,
+    pub initialized: bool, // To check if the account was already initialized and filled with data from a previous booking, to prevent double counting of occupied days when a new booking is made for the same property and month
+    pub bump: u8,          // Bump for PDA
 }
 
 #[account]
@@ -85,6 +89,10 @@ pub struct Booking {
     pub deposit: u64,
     pub check_in: i64,
     pub check_out: i64,
+    pub days: u64,
+    pub yearmonth_in: u32,
+    pub yearmonth_out: u32,
+    pub total_price: u64,
     pub review: u8, // Goes from 0 to 5, where 0 means no review and 1-5 are the actual ratings
     pub status: BookingStatus,
     pub bump: u8, // Bump for PDA
@@ -92,9 +100,12 @@ pub struct Booking {
 
 #[derive(InitSpace, PartialEq, Eq, AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub enum BookingStatus {
-    Pending,
-    Active,
-    Completed,
-    Cancelled,
-    Disputed,
+    Pending,         // The booking has been created by the guest but not yet accepted by the host
+    HostAccepted,    // The host has accepted the booking but the guest has not yet checked in
+    Active,          // The guest has checked in and the booking is active
+    Completed,       // The guest has checked out and the booking is completed, pending review
+    Cancelled, // The booking has been cancelled by either the guest or the host before check-in
+    Disputed,  // The booking is in dispute, pending resolution by the platform admins
+    DisputeResolved, // The dispute has been resolved by the platform admins, pending review
+    DisputeRejected, // The dispute has been rejected by the platform admins, pending review
 }

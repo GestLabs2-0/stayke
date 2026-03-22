@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+//Library
 import { Search, MapPin, CalendarDays, Users } from "lucide-react";
+//React
+import { useState } from "react";
+//Next
 import Link from "next/link";
 
 export const SearchBar = () => {
@@ -10,7 +13,7 @@ export const SearchBar = () => {
   return (
     <div className="w-full flex justify-center px-4 mt-12">
       <div className="w-full max-w-4xl rounded-2xl border border-border bg-card/80 p-2 shadow-card backdrop-blur-xl">
-        <div className="flex flex-col gap-2 md:grid md:grid-cols-4">
+        <div className="flex flex-col gap-2 md:grid md:grid-cols-3">
           {/* Where */}
           <div className="flex items-center gap-3 rounded-xl bg-muted/50 px-4 py-3">
             <MapPin className="h-5 w-5 shrink-0 text-primary" />
@@ -49,13 +52,13 @@ export const SearchBar = () => {
           </div>
 
           {/* Search button */}
-          <Link
+          {/* <Link
             href={`/explore${destination ? `?q=${destination}` : ""}`}
             className="flex items-center justify-center gap-2 rounded-xl gradient-solana text-base font-semibold text-primary-foreground shadow-glow px-4 py-3 transition-opacity hover:opacity-90"
           >
             <Search className="h-5 w-5" />
             Search
-          </Link>
+          </Link> */}
         </div>
       </div>
     </div>

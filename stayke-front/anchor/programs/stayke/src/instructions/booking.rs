@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use crate::{
     errors::StaykeErrors,
     state::{Booking, BookingDays, BookingStatus, PlatformConfig, Property, UserProfile},
-    utils::{DateComponents, derive_date, TimestampExt},
+    utils::{derive_date, DateComponents, TimestampExt},
 };
 
 #[derive(Accounts)]
@@ -30,8 +30,8 @@ pub struct CreateBooking<'info> {
         init,
         payer = client,
         space = 8 + Booking::INIT_SPACE,
-        seeds = [b"booking", property.key().as_ref(), client.key().as_ref(), check_in.to_ne_bytes().as_ref()],
-        bump,
+        seeds = [b"booking", property.key().as_ref(), client.key().as_ref(), check_in.to_le_bytes().as_ref()],
+        bump
     )]
     pub booking: Account<'info, Booking>,
 
@@ -39,18 +39,18 @@ pub struct CreateBooking<'info> {
     pub system_program: Program<'info, System>,
 
     #[account(
-        init_if_needed, 
+        init_if_needed,
         payer = client,
         space = 8 + BookingDays::INIT_SPACE,
-        seeds=[b"booking_days", property.key().as_ref(), check_in.year_month().to_ne_bytes().as_ref()], 
-        bump, 
+        seeds=[b"booking_days", property.key().as_ref(), check_in.year_month().to_le_bytes().as_ref()], 
+        bump,
     )]
     pub booking_days: Account<'info, BookingDays>,
     // Check if there are remaining accounts for the next 12 months of booking days
 }
 
 pub fn ins_create_booking(
-    mut ctx:  Context<CreateBooking>,
+    mut ctx: Context<CreateBooking>,
     check_in: i64,
     check_out: i64,
 ) -> Result<()> {
@@ -72,7 +72,6 @@ pub fn ins_create_booking(
     let property = &mut ctx.accounts.property;
     let host_profile = &mut ctx.accounts.property_host;
     let bump = ctx.bumps.booking;
-
 
     let booking_inner = Booking {
         guest: client.key(),
@@ -103,7 +102,10 @@ pub fn reserve_days(
     let booking_days = &mut ctx.accounts.booking_days;
 
     if booking_days.initialized {
-        require!(booking_days.property == ctx.accounts.property.key(), StaykeErrors::InvalidBookingDaysAccount);
+        require!(
+            booking_days.property == ctx.accounts.property.key(),
+            StaykeErrors::InvalidBookingDaysAccount
+        );
     } else {
         booking_days.property = ctx.accounts.property.key();
         booking_days.month = check_in.month;
@@ -112,26 +114,42 @@ pub fn reserve_days(
         booking_days.initialized = true;
     }
 
-    require!(booking_days.month == check_in.month, StaykeErrors::InvalidBookingDaysAccount);
-    require!(booking_days.year == check_in.year, StaykeErrors::InvalidBookingDaysAccount);
-    
-    if booking_days.month == check_out.month {
-        require!(booking_days.year == check_out.year, StaykeErrors::InvalidBookingDaysAccount);
-        let days_to_reserve = bitmap_days(check_in.day, check_out.day, BitmapOperation::Reserve);
+    require!(
+        booking_days.month == check_in.month,
+        StaykeErrors::InvalidBookingDaysAccount
+    );
+    require!(
+        booking_days.year == check_in.year,
+        StaykeErrors::InvalidBookingDaysAccount
+    );
 
-        require!(booking_days.occupied_days & days_to_reserve == 0, StaykeErrors::DatesAlreadyBooked);
+    if booking_days.month == check_out.month {
+        require!(
+            booking_days.year == check_out.year,
+            StaykeErrors::InvalidBookingDaysAccount
+        );
+        let days_to_reserve = bitmap_days(check_in.day, check_out.day);
+
+        require!(
+            booking_days.occupied_days & days_to_reserve == 0,
+            StaykeErrors::DatesAlreadyBooked
+        );
         booking_days.occupied_days |= days_to_reserve;
     } else {
-          let end_day = months_days(booking_days.month);
-        let days_to_reserve = bitmap_days(check_in.day, end_day, BitmapOperation::Reserve);
-        require!(booking_days.occupied_days & days_to_reserve == 0, StaykeErrors::DatesAlreadyBooked);
+        let end_day = months_days(booking_days.month);
+        let days_to_reserve = bitmap_days(check_in.day, end_day);
+        require!(
+            booking_days.occupied_days & days_to_reserve == 0,
+            StaykeErrors::DatesAlreadyBooked
+        );
         booking_days.occupied_days |= days_to_reserve;
 
-        let remaining_booking_days= ctx.remaining_accounts
-        .iter()
-        .zip(check_in.month + 1..=check_out.month);
+        let remaining_booking_days = ctx
+            .remaining_accounts
+            .iter()
+            .zip(check_in.month + 1..=check_out.month);
 
-        for ( account_info, month) in remaining_booking_days {
+        for (account_info, month) in remaining_booking_days {
             let mut booking_days_account = Account::<BookingDays>::try_from(account_info)?;
             require!(
                 booking_days_account.property == ctx.accounts.property.key(),
@@ -142,17 +160,20 @@ pub fn reserve_days(
                 StaykeErrors::InvalidBookingDaysAccount
             );
 
-            let end_day =  if month == check_out.month {
+            let end_day = if month == check_out.month {
                 check_out.day
             } else {
-               months_days(month)
+                months_days(month)
             };
-            let days_to_reserve = bitmap_days(1, end_day, BitmapOperation::Reserve);
-            require!(booking_days_account.occupied_days & days_to_reserve == 0, StaykeErrors::DatesAlreadyBooked);
+            let days_to_reserve = bitmap_days(1, end_day);
+            require!(
+                booking_days_account.occupied_days & days_to_reserve == 0,
+                StaykeErrors::DatesAlreadyBooked
+            );
             booking_days_account.occupied_days |= days_to_reserve;
+            booking_days_account.exit(&crate::ID)?;
         }
     }
-
 
     Ok(())
 }
@@ -166,28 +187,13 @@ pub fn months_days(month: u32) -> u32 {
     }
 }
 
-pub fn bitmap_days(start_day: u32, end_day: u32, operation: BitmapOperation) -> u32 {
-    let mut days: u32 = 0;
-
-    match operation {
-        BitmapOperation::Reserve => {
-            for day in start_day..=end_day {
-                days |= 1 << (day - 1) as usize;
-            }
-        }
-        BitmapOperation::Release => {
-            for day in start_day..=end_day {
-                days &= !(1 << (day - 1) as usize);
-            }
-        }
+pub fn bitmap_days(start_day: u32, end_day: u32) -> u32 {
+    let mut mask: u32 = 0;
+    for day in start_day..=end_day {
+        mask |= 1 << (day - 1) as usize;
     }
 
-    days
-}
-
-pub enum BitmapOperation {
-    Reserve,
-    Release,
+    mask
 }
 
 // To reserve days: number |= (1 << N);

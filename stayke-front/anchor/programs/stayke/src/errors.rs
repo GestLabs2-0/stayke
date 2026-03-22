@@ -1,7 +1,8 @@
-use anchor_lang::prelude::{error_code, msg};
+use anchor_lang::prelude::error_code;
 
 #[error_code]
-pub enum UserProfileErrors {
+pub enum StaykeErrors {
+    // User profile errors
     #[msg("User profile already exists")]
     UserProfileAlreadyExists,
     #[msg("User profile not found")]
@@ -18,10 +19,8 @@ pub enum UserProfileErrors {
     UserNotHost,
     #[msg("User does not have enough deposit to perform this action")]
     InsufficientDeposit,
-}
 
-#[error_code]
-pub enum PropertyErrors {
+    // Property Errors
     #[msg("Property already exists")]
     PropertyAlreadyExists,
     #[msg("Property not found")]
@@ -30,10 +29,24 @@ pub enum PropertyErrors {
     PropertyInActiveBooking,
     #[msg("Only the host can modify their property")]
     UnauthorizedHost,
-}
 
-#[error_code]
-pub enum DisputeErrors {
+    // BookingErrors
+    #[msg("Booking already exists for this property")]
+    BookingAlreadyExists,
+    #[msg("Booking not found")]
+    BookingNotFound,
+    #[msg("Only the client can make a booking for themselves")]
+    UnauthorizedBooking,
+    #[msg("Only the host can confirm a booking for their property")]
+    UnauthorizedConfirmation,
+    #[msg("Only the client can complete a booking for themselves")]
+    UnauthorizedCompletion,
+    #[msg("Invalid booking dates: check-in must be before check-out")]
+    InvalidBookingDates,
+    #[msg("Dates already booked for this property")]
+    DatesAlreadyBooked,
+
+    // DisputeErrors
     #[msg("Dispute already exists for this booking")]
     DisputeAlreadyExists,
     #[msg("Dispute not found")]
@@ -42,22 +55,16 @@ pub enum DisputeErrors {
     UnauthorizedDispute,
     #[msg("Unauthorized resolution attempt by a non-admin")]
     UnauthorizedResolution,
-}
 
-#[error_code]
-pub enum AdminErrors {
+    // AdminErrors
     #[msg("Unauthorized admin action")]
-    Unauthorized,
-}
+    UnauthorizedAdmin,
 
-#[error_code]
-pub enum ConfigErrors {
+    // ConfigErrors
     #[msg("Configuration already initialized")]
     ConfigAlreadyInitialized,
-}
 
-#[error_code]
-pub enum DepositErrors {
+    // DepositErrors
     #[msg("Deposit amount is below the minimum required")]
     DepositTooLow,
     #[msg("No active booking found for this user")]

@@ -90,7 +90,7 @@ pub struct Booking {
     pub bump: u8, // Bump for PDA
 }
 
-#[derive(InitSpace, PartialEq, Eq, AnchorSerialize, AnchorDeserialize)]
+#[derive(InitSpace, PartialEq, Eq, AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub enum BookingStatus {
     Pending,
     Active,

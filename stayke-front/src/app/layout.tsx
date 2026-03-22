@@ -3,6 +3,7 @@ import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "../components/providers";
 import { Navbar } from "../components/Layout/Navbar";
+import { AuthProvider } from "../Context/AuthContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -33,13 +34,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <Providers>
-        <body
-          suppressHydrationWarning
-          className={`${inter.variable} ${geistMono.variable} antialiased`}
-        >
-          <Navbar />
-          <main className="pt-16">{children}</main>
-        </body>
+        <AuthProvider>
+          <body
+            suppressHydrationWarning
+            className={`${inter.variable} ${geistMono.variable} antialiased`}
+          >
+            <Navbar />
+            <main className="pt-16">{children}</main>
+          </body>
+        </AuthProvider>
       </Providers>
     </html>
   );

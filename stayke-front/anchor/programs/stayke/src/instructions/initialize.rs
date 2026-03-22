@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::errors::ConfigErrors;
+use crate::errors::StaykeErrors;
 use crate::state::{PlatformConfig, UserProfile};
 
 #[derive(Accounts)]
@@ -42,7 +42,7 @@ pub fn initialize_contract(
 
     require!(
         !acc_config.is_initialized,
-        ConfigErrors::ConfigAlreadyInitialized
+        StaykeErrors::ConfigAlreadyInitialized
     );
 
     let InitialConfig {
@@ -69,7 +69,6 @@ pub fn initialize_contract(
         is_initialized: true,
     };
 
-    let mut all_admins = vec![ctx.accounts.signer.key()];
     config.admins.extend(admins);
 
     acc_config.set_inner(config);
@@ -120,6 +119,8 @@ pub fn register_user(ctx: Context<RegisterUser>, dni_hash: [u8; 32]) -> Result<(
         low_infractions: 0,
         medium_infractions: 0,
         high_infractions: 0,
+
+        listing_count: 0,
 
         bump,
     };

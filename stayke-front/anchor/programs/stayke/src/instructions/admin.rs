@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{errors::AdminErrors, state::PlatformConfig};
+use crate::{errors::StaykeErrors, state::PlatformConfig};
 
 #[derive(Accounts)]
 pub struct AddRemoveAdmin<'info> {
@@ -19,7 +19,7 @@ pub fn add_admin(ctx: Context<AddRemoveAdmin>, new_admin: Pubkey) -> Result<()> 
 
     require!(
         config.admins.contains(&ctx.accounts.signer.key()),
-        AdminErrors::Unauthorized
+        StaykeErrors::UnauthorizedAdmin
     );
 
     if !config.admins.contains(&new_admin) {
@@ -34,7 +34,7 @@ pub fn remove_admin(ctx: Context<AddRemoveAdmin>, admin_to_remove: Pubkey) -> Re
 
     require!(
         config.admins.contains(&ctx.accounts.signer.key()),
-        AdminErrors::Unauthorized
+        StaykeErrors::UnauthorizedAdmin
     );
 
     if let Some(pos) = config.admins.iter().position(|x| *x == admin_to_remove) {

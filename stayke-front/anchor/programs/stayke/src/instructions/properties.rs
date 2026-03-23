@@ -83,7 +83,6 @@ pub fn ins_update_property_price(
     new_price_per_night: u64,
 ) -> Result<()> {
     let property = &mut ctx.accounts.property;
-    let user_profile = &ctx.accounts.user_profile;
 
     property.price_per_night = new_price_per_night;
 

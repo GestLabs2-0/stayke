@@ -35,20 +35,44 @@ pub enum StaykeErrors {
     // BookingErrors
     #[msg("Booking already exists for this property")]
     BookingAlreadyExists,
-    #[msg("Booking not found")]
-    BookingNotFound,
     #[msg("Only the client can make a booking for themselves")]
     UnauthorizedBooking,
-    #[msg("Only the host can confirm a booking for their property")]
-    UnauthorizedConfirmation,
     #[msg("Only the client can complete a booking for themselves")]
     UnauthorizedCompletion,
+    #[msg("Host can only accept or cancelled a pending booking")]
+    OnlyAcceptOrCancelled,
+    #[msg("Invalid booking status for this action")]
+    InvalidBookingStatus,
     #[msg("Invalid booking dates: check-in must be before check-out")]
     InvalidBookingDates,
     #[msg("Dates already booked for this property")]
     DatesAlreadyBooked,
+    #[msg("Dates unbooked this property")]
+    DatesUnbooked,
     #[msg("Invalid booking days account for the given dates")]
     InvalidBookingDaysAccount,
+    #[msg("Only the client can cancel their booking")]
+    UnauthorizedCancellation,
+    #[msg("Only the host can cancel a booking for their property")]
+    UnauthorizedHostCancellation,
+    #[msg("Cannot cancel a booking that has already been completed")]
+    CannotCancelCompletedBooking,
+    #[msg("Host cannot book their own property")]
+    HostCannotBookOwnProperty,
+    #[msg("Invalid host for this property")]
+    InvalidHost,
+    #[msg("Invalid month")]
+    InvalidMonth,
+    #[msg("Unitialized booking days accounts")]
+    UnitializedBookingDays,
+    #[msg("Invalid booking property")]
+    InvalidBookingProperty,
+    #[msg("Too early to activate booking. Minimun 1 day left")]
+    TooEarlyToActivate,
+
+    // Close accounts
+    #[msg("Wrong guess passed")]
+    WrongGuessPassed,
 
     // DisputeErrors
     #[msg("Dispute already exists for this booking")]

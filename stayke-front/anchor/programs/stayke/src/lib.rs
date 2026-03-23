@@ -1,11 +1,12 @@
 pub mod errors;
+pub mod events;
 pub mod instructions;
 pub mod state;
 pub mod utils;
 
 use anchor_lang::prelude::*;
 
-use instructions::{admin::*, initialize::*, properties::*, user_profile::*};
+use instructions::{admin::*, booking::*, initialize::*, properties::*, user_profile::*};
 
 #[cfg(test)]
 mod tests;
@@ -56,8 +57,8 @@ pub mod stayke {
     // ----------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------
 
-    pub fn deposit_funds(ctx: Context<Deposit>, amount: u64, decimals: u8) -> Result<()> {
-        ins_deposit(ctx, amount, decimals)
+    pub fn deposit_funds(ctx: Context<Deposit>, amount: u64) -> Result<()> {
+        ins_deposit(ctx, amount)
     }
 
     pub fn set_host_status(
@@ -66,6 +67,36 @@ pub mod stayke {
         status: bool,
     ) -> Result<()> {
         ins_set_host_status(ctx, dni_hash, status)
+    }
+
+    // ----------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------
+    // --------------------------     BOOKING FUNCTIONS     -----------------------------------
+    // ----------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------
+
+    pub fn create_booking(
+        ctx: Context<CreateBooking>,
+        check_in: i64,
+        check_out: i64,
+    ) -> Result<()> {
+        ins_create_booking(ctx, check_in, check_out)
+    }
+
+    pub fn host_pending_accept(ctx: Context<HostPendingAccept>) -> Result<()> {
+        ins_host_pending_accept(ctx)
+    }
+
+    pub fn host_pending_reject(ctx: Context<HostPendingReject>) -> Result<()> {
+        ins_host_pending_reject(ctx)
+    }
+
+    pub fn accept_reserve(ctx: Context<ClientAcceptReserve>) -> Result<()> {
+        ins_accept_reserve(ctx)
+    }
+
+    pub fn client_reject_reserve(ctx: Context<ClientRejectReserve>) -> Result<()> {
+        ins_client_reject_reserve(ctx)
     }
 
     // ----------------------------------------------------------------------------------------

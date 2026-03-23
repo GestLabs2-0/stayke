@@ -18,6 +18,7 @@ export interface CreateUserBody {
   apellido: string;
   dni?: string;
   email?: string;
+  isHost?: boolean;
   nombre: string;
   phone?: string;
   profileImage?: string;

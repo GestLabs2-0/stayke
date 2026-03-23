@@ -5,6 +5,7 @@ import type {
 import type { RequestValidatedAPI, ResponseAPI } from "../typescript/express.js";
 
 import { getPropertyRepository } from "../database/repositories/PropertyRepository.js";
+import { initPropertyPDA } from "../solana/propertyProgram.js";
 import { responseAndLogger } from "../utils/responseAndLogger.js";
 
 // ─── POST /api/v1/properties ────────────────────────────────────────────────
@@ -13,17 +14,21 @@ import { responseAndLogger } from "../utils/responseAndLogger.js";
  * Creates a new property off-chain.
  * Owner and field formats are already validated.
  */
-export const createProperty = async (
-  req: RequestValidatedAPI<CreatePropertyBody>,
-  res: ResponseAPI,
-): Promise<void> => {
+export const createProperty = async (req: RequestValidatedAPI<CreatePropertyBody>, res: ResponseAPI): Promise<void> => {
   try {
     const propRepo = getPropertyRepository();
-    const { comentarios, images, latitud, longitud, nombre, ownerWallet, pdaKey, pricePerNight, ubicacion } =
-      req.body;
+    const { comentarios, images, latitud, longitud, nombre, ownerWallet, pricePerNight, ubicacion } = req.body;
+
+    // Get number of existing properties for this owner to use as counter for PDA
+    const ownerCount = await propRepo.count({
+      where: { owner: { wallet: ownerWallet } },
+    });
+
+    // Initialize PDA on-chain (mock for now, generating pdaKey)
+    // If frontend sent a pdaKey, we could use it, but following phase 4.3, we generate it on backend
+    const { pdaKey } = await initPropertyPDA(ownerWallet, ownerCount);
 
     // PDAs are unique identifiers on-chain, must be unique in DB too
-    // (middleware only validates format, not uniqueness)
     const existingPda = await propRepo.findOne({ where: { pdaKey } });
     if (existingPda) {
       responseAndLogger(res, "Ya existe una propiedad registrada con esta clave PDA", 409);

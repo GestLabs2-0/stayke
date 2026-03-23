@@ -3,6 +3,8 @@ import type { RequestValidatedAPI, ResponseAPI } from "../typescript/express.js"
 
 import { UserRole } from "../database/entities/enums/UserRole.js";
 import { getUserRepository } from "../database/repositories/UserRepository.js";
+import { initUserPDA } from "../solana/userProgram.js";
+import { hashDni, hexToU8Array } from "../utils/hashDni.js";
 import { responseAndLogger } from "../utils/responseAndLogger.js";
 
 // ─── GET /api/v1/users ───────────────────────────────────────────────────────
@@ -45,7 +47,7 @@ export const listAllUsers = async (_req: RequestValidatedAPI, res: ResponseAPI):
 export const createUser = async (req: RequestValidatedAPI<CreateUserBody>, res: ResponseAPI): Promise<void> => {
   try {
     const repo = getUserRepository();
-    const { address, apellido, dni, email, nombre, phone, profileImage, wallet } = req.body;
+    const { address, apellido, dni, email, isHost, nombre, phone, profileImage, wallet } = req.body;
 
     // Wallet uniqueness check
     const existingByWallet = await repo.findOne({ where: { wallet } });
@@ -54,23 +56,39 @@ export const createUser = async (req: RequestValidatedAPI<CreateUserBody>, res: 
       return;
     }
 
+    // Hash the DNI for uniqueness and security
+    const dniHash = dni ? hashDni(dni) : undefined;
+
     // DNI uniqueness check (only if provided)
-    if (dni) {
-      const existingByDni = await repo.findOne({ where: { dni } });
+    if (dniHash) {
+      const existingByDni = await repo.findOne({ where: { dni: dniHash } });
       if (existingByDni) {
         responseAndLogger(res, "Ya existe un usuario registrado con este DNI", 409);
         return;
       }
     }
 
+    // Initialize PDA on-chain (mock for now, only generates pdaKey)
+    let pdaKey: string | undefined;
+    if (dniHash) {
+      const result = await initUserPDA(wallet, hexToU8Array(dniHash));
+      pdaKey = result.pdaKey;
+    }
+
+    // Determine initial roles
+    let roles: UserRole[] = [UserRole.CLIENT];
+    if (isHost) roles = [UserRole.HOST];
+
     const user = repo.create({
       address,
       apellido,
-      dni,
+      dni: dniHash ?? "", // stored as SHA-256 hash
       email,
       nombre,
+      pdaKey,
       phone,
       profileImage,
+      roles,
       wallet,
     });
 
@@ -100,21 +118,32 @@ export const createAdminUser = async (req: RequestValidatedAPI<CreateAdminBody>,
       return;
     }
 
+    // Hash the DNI for uniqueness and security
+    const dniHash = dni ? hashDni(dni) : undefined;
+
     // DNI uniqueness check (only if provided)
-    if (dni) {
-      const existingByDni = await repo.findOne({ where: { dni } });
+    if (dniHash) {
+      const existingByDni = await repo.findOne({ where: { dni: dniHash } });
       if (existingByDni) {
         responseAndLogger(res, "Ya existe un usuario registrado con este DNI", 409);
         return;
       }
     }
 
+    // Initialize PDA on-chain (mock for now, generating pdaKey)
+    let pdaKey: string | undefined;
+    if (dniHash) {
+      const result = await initUserPDA(wallet, hexToU8Array(dniHash));
+      pdaKey = result.pdaKey;
+    }
+
     const user = repo.create({
       address,
       apellido,
-      dni,
+      dni: dniHash ?? "", // stored as SHA-256 hash
       email,
       nombre,
+      pdaKey,
       phone,
       profileImage,
       roles: [UserRole.ADMIN],
@@ -188,18 +217,27 @@ export const updateUser = async (req: RequestValidatedAPI<UpdateUserBody, { wall
       return;
     }
 
+    // Hash the incoming DNI for comparison
+    const dniHash = dni ? hashDni(dni) : undefined;
+
     // email and dni are required — middleware already validated they are present and non-empty
     // DNI uniqueness check when the value changed (must happen before assigning)
-    if (dni !== user.dni) {
-      const existingByDni = await repo.findOne({ where: { dni } });
+    if (dniHash !== user.dni) {
+      const existingByDni = await repo.findOne({ where: { dni: dniHash } });
       if (existingByDni) {
         responseAndLogger(res, "Ya existe un usuario registrado con este DNI", 409);
         return;
       }
+
+      // If DNI changed, regenerate PDA
+      if (dniHash) {
+        const result = await initUserPDA(wallet, hexToU8Array(dniHash));
+        user.pdaKey = result.pdaKey;
+      }
     }
 
     user.email = email;
-    user.dni = dni;
+    user.dni = dniHash ?? "";
 
     if (nombre !== undefined) user.nombre = nombre;
     if (apellido !== undefined) user.apellido = apellido;
@@ -208,9 +246,7 @@ export const updateUser = async (req: RequestValidatedAPI<UpdateUserBody, { wall
     if (roles !== undefined) user.roles = roles;
 
     // profileImage: if not provided or empty, keep existing or assign default avatar
-    user.profileImage = profileImage?.trim()
-      ? profileImage
-      : (user.profileImage ?? "https://ui-avatars.com/api/?background=random");
+    user.profileImage = profileImage?.trim() ? profileImage : (user.profileImage ?? "https://ui-avatars.com/api/?background=random");
 
     const updated = await repo.save(user);
     responseAndLogger(res, "Usuario actualizado exitosamente", 200, updated);

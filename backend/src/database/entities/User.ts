@@ -20,7 +20,7 @@ export class User extends CoreEntity {
   @Column(() => DatedEntity, { prefix: false })
   dated: DatedEntity;
 
-  @Column({ length: 20, type: "varchar", unique: true })
+  @Column({ length: 64, type: "varchar", unique: true })
   dni: string;
 
   @Column({ length: 150, type: "varchar" })
@@ -37,6 +37,13 @@ export class User extends CoreEntity {
 
   @Column({ length: 100, type: "varchar" })
   nombre: string;
+
+  /**
+   * Solana on-chain PDA address (base58) that represents this user
+   * on the blockchain. Unique identifier bridging DB <-> blockchain.
+   */
+  @Column({ length: 44, nullable: true, type: "varchar", unique: true })
+  pdaKey?: string;
 
   @Column({ length: 20, nullable: true, type: "varchar" })
   phone?: string;

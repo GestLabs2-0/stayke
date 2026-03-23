@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
 
+use crate::utils::DateComponents;
+
 pub const MAX_ADMINS: usize = 10;
 
 #[account]
@@ -35,7 +37,7 @@ pub struct UserProfile {
 
     pub is_banned: bool,
 
-    pub active_booking: Option<Pubkey>, // Indicates if the user is currently in an active booking as client or host to prevent modifications
+    pub active_booking: Option<Pubkey>, // Indicates if the user is currently in an active booking as client
 
     pub host_reviews: u32,     // Number of reviews received as host
     pub total_score_host: u64, // Total score from reviews (e.g., sum of ratings)
@@ -65,7 +67,7 @@ pub struct Property {
     pub price_per_night: u64,
     #[max_len(32)]
     pub hash_state: String,
-    pub booking_active: Option<Pubkey>, // Client booking this property is currently active with, if any. This is used to prevent modifications to the property while a booking is active.
+    pub booking_active: Option<Pubkey>, // Pubkey for booking active
     pub bump: u8,                       // Bump for PDA
 }
 
@@ -80,6 +82,12 @@ pub struct BookingDays {
     pub bump: u8,          // Bump for PDA
 }
 
+impl BookingDays {
+    pub fn year_month(&self) -> u32 {
+        self.year * 100 + self.month
+    }
+}
+
 #[account]
 #[derive(InitSpace)]
 pub struct Booking {
@@ -90,8 +98,8 @@ pub struct Booking {
     pub check_in: i64,
     pub check_out: i64,
     pub days: u64,
-    pub yearmonth_in: u32,
-    pub yearmonth_out: u32,
+    pub check_in_date: DateComponents,
+    pub check_out_date: DateComponents,
     pub total_price: u64,
     pub review: u8, // Goes from 0 to 5, where 0 means no review and 1-5 are the actual ratings
     pub status: BookingStatus,

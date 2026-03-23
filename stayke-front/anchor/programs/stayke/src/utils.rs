@@ -44,6 +44,6 @@ impl TimestampExt for i64 {
 
     fn year_month(&self) -> u32 {
         let date = derive_date(*self);
-        date.year * 100 + date.month
+        date.year_month
     }
 }

@@ -20,7 +20,7 @@ pub struct Deposit<'info> {
     #[account(seeds = [b"config"], bump = config.bump)]
     pub config: Account<'info, PlatformConfig>,
 
-    pub token_account: InterfaceAccount<'info, TokenAccount>,
+    pub sender_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(mut, constraint = treasury.key() == config.treasury @ StaykeErrors::InvalidTreasuryAccount)]
     pub treasury: InterfaceAccount<'info, TokenAccount>,
@@ -31,12 +31,10 @@ pub struct Deposit<'info> {
     pub token_program: Interface<'info, TokenInterface>,
 }
 
-pub fn ins_deposit(ctx: Context<Deposit>, amount: u64, decimals: u8) -> Result<()> {
+pub fn ins_deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     let user_profile = &mut ctx.accounts.user_profile;
     let config = &ctx.accounts.config;
-    let treasury = &ctx.accounts.treasury;
-    let token_account = &ctx.accounts.token_account;
-    let mint = &ctx.accounts.mint;
+    let decimals = ctx.accounts.mint.decimals;
 
     require!(
         amount >= config.minimum_deposit,
@@ -44,12 +42,12 @@ pub fn ins_deposit(ctx: Context<Deposit>, amount: u64, decimals: u8) -> Result<(
     );
 
     let cpi_accounts = TransferChecked {
-        from: token_account.to_account_info(),
-        to: treasury.to_account_info(),
+        from: ctx.accounts.sender_token_account.to_account_info(),
+        to: ctx.accounts.treasury.to_account_info(),
         authority: ctx.accounts.signer.to_account_info(),
-        mint: mint.to_account_info(),
+        mint: ctx.accounts.mint.to_account_info(),
     };
-    let cpi_program = token_account.to_account_info();
+    let cpi_program = ctx.accounts.token_program.to_account_info();
 
     let cpi_context = CpiContext::new(*cpi_program.key, cpi_accounts);
     token_interface::transfer_checked(cpi_context, amount, decimals)?;

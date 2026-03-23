@@ -824,36 +824,38 @@
 			}
 
 			function acctFields(accounts, idx) {
-				return accounts
-					.map((a, i) => {
-						const w = a.writable || a.isMut;
-						const s = a.signer || a.isSigner;
-						const autoW =
-							!s &&
-							(a.name.toLowerCase().includes("system") ||
-								a.name.toLowerCase().includes("tokenprogram") ||
-								a.name.toLowerCase().includes("associatedtoken") ||
-								a.name.toLowerCase().includes("rent") ||
-								a.name.toLowerCase().includes("clock"));
-						const autoS = s && !w;
-						return `
-      <div class="acc-row">
-        <span class="acc-name" title="${a.name}">${a.name}</span>
-        <span class="acc-flags">
-          ${w ? '<span class="flag w">mut</span>' : ""}
-          ${s ? '<span class="flag s">sign</span>' : ""}
-        </span>
-        <input class="fi${autoS ? " auto" : ""}"
-          id="a${idx}_${i}"
-          placeholder="${
-						autoS ? "wallet (auto)" : autoW ? "sysvar (auto)" : "PublicKey..."
-					}"
-          ${autoS || autoW ? `data-auto="${autoS ? "wallet" : a.name}"` : ""}
-        />
-      </div>`;
-					})
-					.join("");
-			}
+	return accounts
+		.map((a, i) => {
+			const w = a.writable || a.isMut;
+			const s = a.signer || a.isSigner;
+			const isPda = !!(a.pda && a.pda.seeds); // <-- Detectamos si el IDL define seeds
+			
+			const autoW =
+				!s &&
+				(a.name.toLowerCase().includes("system") ||
+					a.name.toLowerCase().includes("tokenprogram") ||
+					a.name.toLowerCase().includes("associatedtoken") ||
+					a.name.toLowerCase().includes("rent") ||
+					a.name.toLowerCase().includes("clock"));
+			const autoS = s && !w;
+			return `
+<div class="acc-row">
+  <span class="acc-name" title="${a.name}">${a.name}</span>
+  <span class="acc-flags">
+    ${w ? '<span class="flag w">mut</span>' : ""}
+    ${s ? '<span class="flag s">sign</span>' : ""}
+    ${isPda ? '<span class="flag" style="color:var(--accent2);border-color:var(--accent2)">pda</span>' : ""}
+  </span>
+  <input class="fi${autoS || isPda ? " auto" : ""}"
+    id="a${idx}_${i}"
+    placeholder="${
+			isPda ? "PDA (auto)" : autoS ? "wallet (auto)" : autoW ? "sysvar (auto)" : "PublicKey..."
+		}"
+  />
+</div>`;
+		})
+		.join("");
+}
 
 			function argFields(args, idl, idx) {
 				return args
@@ -1179,35 +1181,98 @@
 					// 1. discriminant
 					const d = await disc(ixName);
 
-					// 2. encode args
+					// 2. encode args (y guardamos los valores puros para los PDAs)
 					const w = new Borsh();
 					const args = ix.args || [];
+					const parsedArgs = {}; // <-- Guardamos un diccionario de argumentos
 					for (let i = 0; i < args.length; i++) {
 						const raw = document.getElementById(`g${idx}_${i}`)?.value;
 						if (raw === undefined || raw === "")
 							throw new Error(`missing arg: ${args[i].name}`);
+						parsedArgs[args[i].name] = raw; 
 						encArg(w, args[i].type, raw, IDL);
 					}
 
 					const data = new Uint8Array([...d, ...w.raw()]);
 
-					// 3. build keys
+					// 3. build keys y resolver PDAs
 					const accts = ix.accounts || [];
 					const keys = [];
+					const resolvedKeys = {}; // <-- Mapea nombres de cuentas a PublicKeys para resolver dependencias en cadena
+
 					for (let i = 0; i < accts.length; i++) {
 						const a = accts[i];
 						let pkStr = document.getElementById(`a${idx}_${i}`)?.value?.trim();
 
 						if (!pkStr) {
-							const auto = autoResolve(a.name);
-							if (auto) {
-								pkStr = auto;
-							} else if (a.signer || a.isSigner) {
-								pkStr = wallet.publicKey.toString();
-							} else {
-								throw new Error(`missing account: ${a.name}`);
+							// --- LÓGICA DE AUTO-DERIVACIÓN DE PDA ---
+							if (a.pda && a.pda.seeds) {
+								try {
+									const seedBuffers = [];
+									for (const s of a.pda.seeds) {
+										if (s.kind === "const") {
+											// Seed estático definido en el IDL
+											seedBuffers.push(new Uint8Array(s.value));
+										} else if (s.kind === "account") {
+											// Depende de otra cuenta (debe haberse resuelto antes)
+											let refPk = resolvedKeys[s.path];
+											if (!refPk && wallet?.publicKey && (s.path === 'payer' || s.path === 'signer' || s.path === 'authority')) {
+												refPk = wallet.publicKey.toString(); // Fallback rápido si depende del signer
+											}
+											if (!refPk) throw new Error(`depende de la cuenta '${s.path}' que aún no está resuelta`);
+											seedBuffers.push(new PublicKey(refPk).toBytes());
+										} else if (s.kind === "arg") {
+											// Depende de un argumento ingresado por el usuario
+											const argRaw = parsedArgs[s.path];
+											if (!argRaw) throw new Error(`depende del argumento faltante: ${s.path}`);
+											const argDef = ix.args.find(x => x.name === s.path);
+											
+											// Anchor serializa los strings en los seeds SIN el prefijo de longitud de Borsh
+											if (argDef.type === "string") {
+												seedBuffers.push(new TextEncoder().encode(argRaw.replace(/^"|"$/g, "")));
+											} else if (argDef.type === "pubkey" || argDef.type === "publicKey") {
+												seedBuffers.push(new PublicKey(argRaw).toBytes());
+											} else {
+												// Para números (u8, u64) usamos Borsh que maneja el little-endian correctamente
+												const tw = new Borsh();
+												encArg(tw, argDef.type, argRaw, IDL);
+												seedBuffers.push(tw.raw());
+											}
+										}
+									}
+									
+									// Calcular el PDA síncronamente
+									const [pda] = PublicKey.findProgramAddressSync(seedBuffers, new PublicKey(pid));
+									pkStr = pda.toString();
+									
+									// Reflejarlo en la UI para feedback visual
+									const inputEl = document.getElementById(`a${idx}_${i}`);
+									if (inputEl) {
+										inputEl.value = pkStr;
+										inputEl.style.color = "var(--green)";
+										inputEl.style.borderColor = "var(--border)";
+									}
+									log(`derived PDA [${a.name}]: ${pkStr}…`, "info");
+								} catch (err) {
+									log(`No se pudo derivar el PDA para ${a.name}: ${err.message}`, "warn");
+								}
+							}
+							
+							// Fallbacks clásicos si no es PDA o falló la derivación
+							if (!pkStr) {
+								const auto = autoResolve(a.name);
+								if (auto) {
+									pkStr = auto;
+								} else if (a.signer || a.isSigner) {
+									pkStr = wallet.publicKey.toString();
+								} else {
+									throw new Error(`missing account: ${a.name}`);
+								}
 							}
 						}
+
+						// Guardar el Pubkey resuelto por si otra cuenta PDA más adelante depende de esta
+						resolvedKeys[a.name] = pkStr; 
 
 						keys.push({
 							pubkey: new PublicKey(pkStr),

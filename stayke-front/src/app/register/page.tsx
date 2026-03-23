@@ -58,7 +58,7 @@ export const Register = () => {
     const payload = {
       ...form,
       wallet: wallet?.account?.address?.toString() ?? "",
-      roles: form.isHost ? ["host", "client"] : ["client"],
+      roles: form.isHost ? ["host"] : ["client"],
     };
 
     console.log("Submit payload:", payload);

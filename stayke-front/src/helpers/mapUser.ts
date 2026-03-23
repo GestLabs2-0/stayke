@@ -10,7 +10,7 @@ export const mapBackendUserToUser = (backendUser: BackendUser): User => ({
   lastName: backendUser.apellido,
   email: backendUser.email,
   wallet: backendUser.wallet,
-  isHost: backendUser.role === "HOST" || backendUser.role === "ADMIN",
+  isHost: backendUser.roles.includes("HOST") || backendUser.roles.includes("ADMIN"),
   reputation: 0, // Campo futuro
   reviews: [],   // Campo futuro
   phone: backendUser.phone,

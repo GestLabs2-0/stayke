@@ -39,7 +39,8 @@ const UserMenu = () => {
 
   const address = wallet?.account?.address?.toString() ?? "";
   const { balance, isLoading: loadingBalance } = useSolBalance(address);
-  const { balance: usdcBalance, isLoading: loadingUsdc } = useTokenBalance(address);
+  const { balance: usdcBalance, isLoading: loadingUsdc } =
+    useTokenBalance(address);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(address);
@@ -167,7 +168,7 @@ const UserMenu = () => {
                   }`}
               >
                 <div className="h-2 w-2 rounded-full bg-emerald-400 mr-2" />
-                {user?.isHost ? "Host & Client" : "Client"}
+                {user?.isHost ? "Host" : "Client"}
               </span>
             </div>
           </div>

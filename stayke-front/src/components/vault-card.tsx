@@ -16,7 +16,7 @@ import {
   getDepositInstructionDataEncoder,
   getWithdrawInstructionDataEncoder,
   VAULT_PROGRAM_ADDRESS,
-} from "../generated/vault";
+} from "../app/generated/vault";
 
 const LAMPORTS_PER_SOL = 1_000_000_000n;
 const SYSTEM_PROGRAM_ADDRESS = "11111111111111111111111111111111" as Address;

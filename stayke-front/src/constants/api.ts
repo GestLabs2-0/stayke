@@ -11,5 +11,9 @@ export const API_CONFIG = {
     PROPERTIES: "/api-v1/properties",
     PROPERTIES_BY_WALLET: (wallet: string) => `/api-v1/properties/${wallet}`,
     PROPERTY_BY_ID: (id: string | number) => `/api-v1/properties/${id}`,
+
+    // Solana
+    SOLANA_INIT_ATA: "/api-v1/solana/init-ata",
+    SOLANA_TRANSFER_TOKEN: "/api-v1/solana/transfer-token",
   },
 } as const;

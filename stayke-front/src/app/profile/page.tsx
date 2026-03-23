@@ -18,6 +18,9 @@ import { useWalletConnection } from "@solana/react-hooks";
 import Link from "next/link";
 import { truncate } from "@/src/helpers/Truncate";
 import { useSolBalance } from "@/src/Hooks/useSolanaBalance";
+import { useTokenBalance } from "@/src/Hooks/useTokenBalance";
+import { useUserOnChain } from "@/src/Hooks/useUserOnChain";
+import { solanaService } from "@/src/services/solanaService";
 import type { Review } from "@/src/types/AuthContex";
 import { propertyService } from "@/src/services/propertyService";
 import { mapBackendPropertyToListing } from "@/src/helpers/mapProperty";
@@ -31,6 +34,8 @@ export default function ProfilePage() {
 
   const address = wallet?.account?.address?.toString() ?? user?.wallet ?? "";
   const { balance, isLoading: loadingBalance } = useSolBalance(address);
+  const { balance: usdcBalance, isLoading: loadingUsdc } = useTokenBalance(address);
+  const { isRegistered: isOnChain, isLoading: loadingOnChain } = useUserOnChain(user?.pdaKey);
 
   const [myProperties, setMyProperties] = useState<ListingCardProps[]>([]);
   const [loadingProps, setLoadingProps] = useState(false);
@@ -55,6 +60,16 @@ export default function ProfilePage() {
       fetchMyProps();
     }
   }, [isRegistered, isLoading, user?.wallet, user?.isHost, router]);
+  const handleInitOnChain = async () => {
+    if (!user) return;
+    try {
+      await solanaService.initATA(address);
+      window.location.reload(); // Quick refresh to update balance
+    } catch (error) {
+      console.error("Error initializing on-chain:", error);
+      alert("Error al inicializar la cuenta en cadena. Verifica tu conexión.");
+    }
+  };
 
   if (isLoading || !user) {
     return (
@@ -161,15 +176,23 @@ export default function ProfilePage() {
                 Balance
               </p>
             </div>
-            <div className="flex items-baseline gap-1">
-              {loadingBalance ? (
+            <div className="flex flex-col gap-1">
+              {loadingBalance || loadingUsdc ? (
                 <div className="h-6 w-16 rounded bg-muted/40 animate-pulse" />
               ) : (
                 <>
-                  <span className="font-display text-xl font-bold text-gradient">
-                    {balance !== null ? balance.toFixed(3) : "—"}
-                  </span>
-                  <span className="text-xs text-muted-foreground">SOL</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-display text-xl font-bold text-gradient">
+                      {balance !== null ? balance.toFixed(3) : "—"}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-semibold">SOL</span>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-display text-lg font-bold text-primary">
+                      {usdcBalance !== null ? usdcBalance.toFixed(2) : "—"}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-semibold">USDC</span>
+                  </div>
                 </>
               )}
             </div>
@@ -197,6 +220,53 @@ export default function ProfilePage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* ── On-Chain Status ── */}
+        <div className="rounded-2xl border border-border bg-card p-5 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-sm font-bold text-foreground uppercase tracking-wider">
+              On-Chain Security
+            </h2>
+            {loadingOnChain ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : isOnChain ? (
+              <div className="flex items-center gap-1 text-emerald-400">
+                <Shield className="h-4 w-4" />
+                <span className="text-[10px] font-bold uppercase">Verified</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-amber-400">
+                <Shield className="h-4 w-4 opacity-50" />
+                <span className="text-[10px] font-bold uppercase">Not Initialized</span>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-muted/30 rounded-xl p-4 border border-border/50">
+            <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+              Your identity and property registrations are secured on the Solana blockchain. 
+              {isOnChain 
+                ? " Your account is already linked and verified on-chain." 
+                : " You need to initialize your blockchain identity to enable secure transactions and property listings."}
+            </p>
+            
+            {!isOnChain && (
+              <button
+                onClick={handleInitOnChain}
+                className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity shadow-glow"
+              >
+                Initialize Blockchain Profile
+              </button>
+            )}
+            
+            {isOnChain && (
+              <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground bg-background/50 p-2 rounded-lg border border-border/30">
+                <Wallet className="h-3 w-3" />
+                <span className="truncate">{user.pdaKey}</span>
+              </div>
+            )}
           </div>
         </div>
 

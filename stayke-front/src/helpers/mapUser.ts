@@ -15,4 +15,5 @@ export const mapBackendUserToUser = (backendUser: BackendUser): User => ({
   reviews: [],   // Campo futuro
   phone: backendUser.phone,
   image: backendUser.profileImage,
+  pdaKey: backendUser.pdaKey,
 });

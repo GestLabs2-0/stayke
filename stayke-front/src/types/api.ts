@@ -17,6 +17,7 @@ export interface BackendUser {
   phone?: string;
   address?: string;
   profileImage?: string;
+  pdaKey?: string;
   role: "CLIENT" | "HOST" | "ADMIN";
   createdAt: string;
   updatedAt: string;

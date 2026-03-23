@@ -28,6 +28,7 @@ import { PhantomModal } from "./Modal/PhantomModal";
 import { navLinks } from "@/src/constants";
 import { useAuth } from "@/src/Context/AuthContext";
 import { useSolBalance } from "@/src/Hooks/useSolanaBalance";
+import { useTokenBalance } from "@/src/Hooks/useTokenBalance";
 
 const UserMenu = () => {
   const { user, logout } = useAuth();
@@ -38,6 +39,7 @@ const UserMenu = () => {
 
   const address = wallet?.account?.address?.toString() ?? "";
   const { balance, isLoading: loadingBalance } = useSolBalance(address);
+  const { balance: usdcBalance, isLoading: loadingUsdc } = useTokenBalance(address);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(address);
@@ -114,24 +116,29 @@ const UserMenu = () => {
                   Balance
                 </p>
                 <div className="flex items-baseline gap-2">
-                  {loadingBalance ? (
+                  {loadingBalance || loadingUsdc ? (
                     <div className="h-8 w-24 rounded-lg bg-muted/40 animate-pulse" />
                   ) : (
-                    <>
-                      <span className="font-display text-3xl font-bold text-foreground">
-                        {balance !== null ? balance.toFixed(4) : "—"}
-                      </span>
-                      <span className="text-sm font-medium text-muted-foreground">
-                        SOL
-                      </span>
-                    </>
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-display text-2xl font-bold text-foreground">
+                          {balance !== null ? balance.toFixed(4) : "—"}
+                        </span>
+                        <span className="text-xs font-medium text-muted-foreground uppercase">
+                          SOL
+                        </span>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-display text-xl font-bold text-primary">
+                          {usdcBalance !== null ? usdcBalance.toFixed(2) : "—"}
+                        </span>
+                        <span className="text-xs font-medium text-muted-foreground uppercase">
+                          USDC
+                        </span>
+                      </div>
+                    </div>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {balance !== null
-                    ? `≈ $${(balance * 150).toFixed(2)} USD` // TODO: precio real de SOL
-                    : "≈ — USD"}
-                </p>
               </div>
             </div>
           </div>

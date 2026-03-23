@@ -18,6 +18,7 @@ export interface User {
   image?: string;
   reputation: number;
   reviews?: Review[];
+  pdaKey?: string;
 }
 export interface RegisterPayload {
   firstName: string;

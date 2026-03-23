@@ -185,7 +185,7 @@ pub fn ins_penalize_user(ctx: Context<PenalizeUser>, severity: PenaltySeverity) 
         let cpi_ctx = CpiContext::new_with_signer(
             ctx.accounts.token_program.key(),
             cpi_accounts,
-            &treasury_seeds,
+            treasury_seeds,
         );
         token_interface::transfer_checked(cpi_ctx, actual_retribution, ctx.accounts.mint.decimals)?;
 

@@ -76,8 +76,8 @@ export const createUser = async (req: RequestValidatedAPI<CreateUserBody>, res: 
     }
 
     // Determine initial roles
-    const roles: UserRole[] = [UserRole.CLIENT];
-    if (isHost) roles.push(UserRole.HOST);
+    let roles: UserRole[] = [UserRole.CLIENT];
+    if (isHost) roles = [UserRole.HOST];
 
     const user = repo.create({
       address,
@@ -246,9 +246,7 @@ export const updateUser = async (req: RequestValidatedAPI<UpdateUserBody, { wall
     if (roles !== undefined) user.roles = roles;
 
     // profileImage: if not provided or empty, keep existing or assign default avatar
-    user.profileImage = profileImage?.trim()
-      ? profileImage
-      : (user.profileImage ?? "https://ui-avatars.com/api/?background=random");
+    user.profileImage = profileImage?.trim() ? profileImage : (user.profileImage ?? "https://ui-avatars.com/api/?background=random");
 
     const updated = await repo.save(user);
     responseAndLogger(res, "Usuario actualizado exitosamente", 200, updated);

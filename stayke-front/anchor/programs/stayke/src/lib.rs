@@ -118,6 +118,10 @@ pub mod stayke {
         ins_resolve_dispute(ctx, host_share_bps, rejected)
     }
 
+    pub fn close_dispute(ctx: Context<CloseDispute>) -> Result<()> {
+        ins_close_dispute(ctx)
+    }
+
     // ----------------------------------------------------------------------------------------
     // --------------------------     ADMIN FUNCTIONS       -----------------------------------
     // ----------------------------------------------------------------------------------------

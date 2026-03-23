@@ -10,6 +10,7 @@ import {
   combineCodec,
   fixDecoderSize,
   fixEncoderSize,
+  getAddressEncoder,
   getBytesDecoder,
   getBytesEncoder,
   getProgramDerivedAddress,
@@ -33,6 +34,7 @@ import {
 } from "@solana/kit";
 import { STAYKE_PROGRAM_ADDRESS } from "../programs";
 import {
+  expectAddress,
   expectSome,
   getAccountMetaFactory,
   type ResolvedAccount,
@@ -162,6 +164,7 @@ export async function getRegisterUserInstructionAsync<
       seeds: [
         getBytesEncoder().encode(new Uint8Array([117, 115, 101, 114])),
         fixEncoderSize(getBytesEncoder(), 32).encode(expectSome(args.dniHash)),
+        getAddressEncoder().encode(expectAddress(accounts.signer.value)),
       ],
     });
   }

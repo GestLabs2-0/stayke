@@ -19,7 +19,7 @@ pub struct CreateBooking<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", client_profile.dni.as_ref()],
+        seeds = [b"user", client_profile.dni.as_ref(), client.key().as_ref()],
         bump = client_profile.bump,
         constraint = client.key() != property_host.key() @ StaykeErrors::HostCannotBookOwnProperty,
         constraint = client.key() == client_profile.owner @ StaykeErrors::UnauthorizedBooking,
@@ -39,7 +39,7 @@ pub struct CreateBooking<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", property_host.dni.as_ref()],
+        seeds = [b"user", property_host.dni.as_ref(), property_host.owner.as_ref()],
         bump = property_host.bump,
         constraint = !property_host.is_banned @ StaykeErrors::UserBanned,
         constraint = property_host.is_verified @ StaykeErrors::UserNotVerified,
@@ -261,7 +261,7 @@ pub struct HostPendingAccept<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", property_host.dni.as_ref()],
+        seeds = [b"user", property_host.dni.as_ref(), host.key().as_ref()],
         bump = property_host.bump,
         constraint = host.key() == property_host.owner @ StaykeErrors::UnauthorizedUser,
         constraint = !property_host.is_banned @ StaykeErrors::UserBanned,
@@ -302,7 +302,7 @@ pub struct HostPendingReject<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", property_host.dni.as_ref()],
+        seeds = [b"user", property_host.dni.as_ref(), host.key().as_ref()],
         bump = property_host.bump,
         constraint = host.key() == property_host.owner @ StaykeErrors::UnauthorizedUser,
         constraint = !property_host.is_banned @ StaykeErrors::UserBanned,
@@ -445,7 +445,7 @@ pub struct ClientAcceptReserve<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", client_profile.dni.as_ref()],
+        seeds = [b"user", client_profile.dni.as_ref(), client.key().as_ref()],
         bump = client_profile.bump,
         constraint = client.key() == client_profile.owner @ StaykeErrors::UnauthorizedBooking,
         constraint = !client_profile.is_banned @ StaykeErrors::UserBanned,
@@ -540,7 +540,7 @@ pub struct ClientRejectReserve<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", client_profile.dni.as_ref()],
+        seeds = [b"user", client_profile.dni.as_ref(), client.key().as_ref()],
         bump = client_profile.bump,
         constraint = client.key() != booking.host @ StaykeErrors::HostCannotBookOwnProperty,
         constraint = client.key() == client_profile.owner @ StaykeErrors::UnauthorizedBooking,
@@ -603,7 +603,7 @@ pub struct CompleteStay<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", client_profile.dni.as_ref()],
+        seeds = [b"user", client_profile.dni.as_ref(), client.key().as_ref()],
         bump = client_profile.bump,
         constraint = client.key() == client_profile.owner @ StaykeErrors::UnauthorizedUser,
         constraint = !client_profile.is_banned @ StaykeErrors::UserBanned,
@@ -612,7 +612,7 @@ pub struct CompleteStay<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", host_profile.dni.as_ref()],
+        seeds = [b"user", host_profile.dni.as_ref(), host_profile.owner.as_ref()],
         bump = host_profile.bump,
     )]
     pub host_profile: Account<'info, UserProfile>,
@@ -735,7 +735,7 @@ pub struct CloseBooking<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", client_profile.dni.as_ref()],
+        seeds = [b"user", client_profile.dni.as_ref(), client.key().as_ref()],
         bump = client_profile.bump,
         constraint = client.key() == client_profile.owner @ StaykeErrors::UnauthorizedUser,
         constraint = !client_profile.is_banned @ StaykeErrors::UserBanned,
@@ -744,7 +744,7 @@ pub struct CloseBooking<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", host_profile.dni.as_ref()],
+        seeds = [b"user", host_profile.dni.as_ref(), host_profile.owner.as_ref()],
         bump = host_profile.bump,
     )]
     pub host_profile: Account<'info, UserProfile>,

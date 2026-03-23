@@ -23,11 +23,20 @@ pub struct OpenDispute<'info> {
 
     #[account(
         mut,
+        seeds = [b"user", user_profile.dni.as_ref(), user_profile.owner.as_ref()],
+        constraint = caller.key() == user_profile.owner @ StaykeErrors::UnauthorizedUser,
+        constraint = !user_profile.is_banned @ StaykeErrors::UserBanned,
+        bump = user_profile.bump,
+    )]
+    pub user_profile: Account<'info, UserProfile>,
+
+    #[account(
+        mut,
         seeds = [b"booking", booking.property.as_ref(), booking.guest.as_ref(), booking.check_in.to_le_bytes().as_ref()],
         bump = booking.bump,
         constraint = booking.status == BookingStatus::Active @ StaykeErrors::BookingNotActive,
         // Only the guest or the host can open a dispute
-        constraint = caller.key() == booking.guest || caller.key() == booking.host @ StaykeErrors::NotAPartyToBooking,
+        constraint = user_profile.key() == booking.guest || user_profile.key() == booking.host @ StaykeErrors::NotAPartyToBooking,
     )]
     pub booking: Account<'info, Booking>,
 
@@ -50,7 +59,7 @@ pub fn ins_open_dispute(ctx: Context<OpenDispute>, reason: DisputeReason) -> Res
     booking.status = BookingStatus::Disputed;
 
     dispute.booking = booking.key();
-    dispute.opened_by = ctx.accounts.caller.key();
+    dispute.opened_by = ctx.accounts.user_profile.key();
     dispute.reason = reason;
     dispute.status = DisputeStatus::Open;
     dispute.bump = ctx.bumps.dispute;
@@ -288,7 +297,7 @@ pub struct CloseDispute<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", host_profile.dni.as_ref()],
+        seeds = [b"user", host_profile.dni.as_ref(), host_profile.owner.as_ref()],
         bump = host_profile.bump,
         constraint = host_profile.key() == booking.host @ StaykeErrors::InvalidHost,
     )]
@@ -296,7 +305,7 @@ pub struct CloseDispute<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", guest_profile.dni.as_ref()],
+        seeds = [b"user", guest_profile.dni.as_ref(), guest_profile.owner.as_ref()],
         bump = guest_profile.bump,
         constraint = guest_profile.key() == booking.guest @ StaykeErrors::UnauthorizedUser,
     )]

@@ -5,11 +5,11 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-vault = "BSX3yt7xpwNp8BtkJhDMv2Q1227pji3TpvSJWnnLENHg"
+stayke = "GwRWqCBjW87B74SeHx3sH8w4WVGdbwc6tCKoSsUsLGqW"
 
 [provider]
 cluster = "devnet"
-wallet = "~/.config/solana/id.json"
+wallet = "./keypair.json"
 
 [scripts]
 test = "cargo test"

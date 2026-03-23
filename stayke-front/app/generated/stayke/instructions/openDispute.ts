@@ -58,6 +58,7 @@ export function getOpenDisputeDiscriminatorBytes() {
 export type OpenDisputeInstruction<
   TProgram extends string = typeof STAYKE_PROGRAM_ADDRESS,
   TAccountCaller extends string | AccountMeta<string> = string,
+  TAccountUserProfile extends string | AccountMeta<string> = string,
   TAccountBooking extends string | AccountMeta<string> = string,
   TAccountDispute extends string | AccountMeta<string> = string,
   TAccountSystemProgram extends string | AccountMeta<string> =
@@ -71,6 +72,9 @@ export type OpenDisputeInstruction<
         ? WritableSignerAccount<TAccountCaller> &
             AccountSignerMeta<TAccountCaller>
         : TAccountCaller,
+      TAccountUserProfile extends string
+        ? WritableAccount<TAccountUserProfile>
+        : TAccountUserProfile,
       TAccountBooking extends string
         ? WritableAccount<TAccountBooking>
         : TAccountBooking,
@@ -120,11 +124,13 @@ export function getOpenDisputeInstructionDataCodec(): FixedSizeCodec<
 
 export type OpenDisputeAsyncInput<
   TAccountCaller extends string = string,
+  TAccountUserProfile extends string = string,
   TAccountBooking extends string = string,
   TAccountDispute extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
   caller: TransactionSigner<TAccountCaller>;
+  userProfile: Address<TAccountUserProfile>;
   booking: Address<TAccountBooking>;
   dispute?: Address<TAccountDispute>;
   systemProgram?: Address<TAccountSystemProgram>;
@@ -133,6 +139,7 @@ export type OpenDisputeAsyncInput<
 
 export async function getOpenDisputeInstructionAsync<
   TAccountCaller extends string,
+  TAccountUserProfile extends string,
   TAccountBooking extends string,
   TAccountDispute extends string,
   TAccountSystemProgram extends string,
@@ -140,6 +147,7 @@ export async function getOpenDisputeInstructionAsync<
 >(
   input: OpenDisputeAsyncInput<
     TAccountCaller,
+    TAccountUserProfile,
     TAccountBooking,
     TAccountDispute,
     TAccountSystemProgram
@@ -149,6 +157,7 @@ export async function getOpenDisputeInstructionAsync<
   OpenDisputeInstruction<
     TProgramAddress,
     TAccountCaller,
+    TAccountUserProfile,
     TAccountBooking,
     TAccountDispute,
     TAccountSystemProgram
@@ -160,6 +169,7 @@ export async function getOpenDisputeInstructionAsync<
   // Original accounts.
   const originalAccounts = {
     caller: { value: input.caller ?? null, isWritable: true },
+    userProfile: { value: input.userProfile ?? null, isWritable: true },
     booking: { value: input.booking ?? null, isWritable: true },
     dispute: { value: input.dispute ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
@@ -193,6 +203,7 @@ export async function getOpenDisputeInstructionAsync<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.caller),
+      getAccountMeta(accounts.userProfile),
       getAccountMeta(accounts.booking),
       getAccountMeta(accounts.dispute),
       getAccountMeta(accounts.systemProgram),
@@ -204,6 +215,7 @@ export async function getOpenDisputeInstructionAsync<
   } as OpenDisputeInstruction<
     TProgramAddress,
     TAccountCaller,
+    TAccountUserProfile,
     TAccountBooking,
     TAccountDispute,
     TAccountSystemProgram
@@ -212,11 +224,13 @@ export async function getOpenDisputeInstructionAsync<
 
 export type OpenDisputeInput<
   TAccountCaller extends string = string,
+  TAccountUserProfile extends string = string,
   TAccountBooking extends string = string,
   TAccountDispute extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
   caller: TransactionSigner<TAccountCaller>;
+  userProfile: Address<TAccountUserProfile>;
   booking: Address<TAccountBooking>;
   dispute: Address<TAccountDispute>;
   systemProgram?: Address<TAccountSystemProgram>;
@@ -225,6 +239,7 @@ export type OpenDisputeInput<
 
 export function getOpenDisputeInstruction<
   TAccountCaller extends string,
+  TAccountUserProfile extends string,
   TAccountBooking extends string,
   TAccountDispute extends string,
   TAccountSystemProgram extends string,
@@ -232,6 +247,7 @@ export function getOpenDisputeInstruction<
 >(
   input: OpenDisputeInput<
     TAccountCaller,
+    TAccountUserProfile,
     TAccountBooking,
     TAccountDispute,
     TAccountSystemProgram
@@ -240,6 +256,7 @@ export function getOpenDisputeInstruction<
 ): OpenDisputeInstruction<
   TProgramAddress,
   TAccountCaller,
+  TAccountUserProfile,
   TAccountBooking,
   TAccountDispute,
   TAccountSystemProgram
@@ -250,6 +267,7 @@ export function getOpenDisputeInstruction<
   // Original accounts.
   const originalAccounts = {
     caller: { value: input.caller ?? null, isWritable: true },
+    userProfile: { value: input.userProfile ?? null, isWritable: true },
     booking: { value: input.booking ?? null, isWritable: true },
     dispute: { value: input.dispute ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
@@ -272,6 +290,7 @@ export function getOpenDisputeInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.caller),
+      getAccountMeta(accounts.userProfile),
       getAccountMeta(accounts.booking),
       getAccountMeta(accounts.dispute),
       getAccountMeta(accounts.systemProgram),
@@ -283,6 +302,7 @@ export function getOpenDisputeInstruction<
   } as OpenDisputeInstruction<
     TProgramAddress,
     TAccountCaller,
+    TAccountUserProfile,
     TAccountBooking,
     TAccountDispute,
     TAccountSystemProgram
@@ -296,9 +316,10 @@ export type ParsedOpenDisputeInstruction<
   programAddress: Address<TProgram>;
   accounts: {
     caller: TAccountMetas[0];
-    booking: TAccountMetas[1];
-    dispute: TAccountMetas[2];
-    systemProgram: TAccountMetas[3];
+    userProfile: TAccountMetas[1];
+    booking: TAccountMetas[2];
+    dispute: TAccountMetas[3];
+    systemProgram: TAccountMetas[4];
   };
   data: OpenDisputeInstructionData;
 };
@@ -311,7 +332,7 @@ export function parseOpenDisputeInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>,
 ): ParsedOpenDisputeInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 4) {
+  if (instruction.accounts.length < 5) {
     // TODO: Coded error.
     throw new Error("Not enough accounts");
   }
@@ -325,6 +346,7 @@ export function parseOpenDisputeInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       caller: getNextAccount(),
+      userProfile: getNextAccount(),
       booking: getNextAccount(),
       dispute: getNextAccount(),
       systemProgram: getNextAccount(),

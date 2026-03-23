@@ -15,7 +15,7 @@ pub struct Deposit<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", user_profile.dni.as_ref()],
+        seeds = [b"user", user_profile.dni.as_ref(), signer.key().as_ref()],
         constraint = signer.key() == user_profile.owner @ StaykeErrors::UnauthorizedUser,
         bump = user_profile.bump,
     )]
@@ -73,7 +73,7 @@ pub struct SetHostStatus<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", user_profile.dni.as_ref()],
+        seeds = [b"user", user_profile.dni.as_ref(), signer.key().as_ref()],
         bump = user_profile.bump,
     )]
     pub user_profile: Account<'info, UserProfile>,
@@ -103,7 +103,7 @@ pub struct WithdrawGuarantee<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", user_profile.dni.as_ref()],
+        seeds = [b"user", user_profile.dni.as_ref(), signer.key().as_ref()],
         constraint = signer.key() == user_profile.owner @ StaykeErrors::UnauthorizedUser,
         constraint = !user_profile.is_banned @ StaykeErrors::UserBanned,
         constraint = user_profile.active_booking.is_none() @ StaykeErrors::WithdrawWithActiveBooking,
@@ -126,7 +126,10 @@ pub struct WithdrawGuarantee<'info> {
     pub treasury_pda: UncheckedAccount<'info>,
 
     /// Destination: the user's own USDC token account.
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = user_profile.token_account == user_token_account.key() @ StaykeErrors::InvalidTokenAccount
+    )]
     pub user_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(mut, constraint = mint.key() == config.usdc_mint @ StaykeErrors::InvalidTokenMint)]

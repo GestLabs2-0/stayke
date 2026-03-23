@@ -146,7 +146,7 @@ pub struct RegisterUser<'info> {
         init,
         payer = signer,
         space = 8 + UserProfile::INIT_SPACE,
-        seeds = [b"user", dni_hash.as_ref()],
+        seeds = [b"user", dni_hash.as_ref(), signer.key().as_ref()],
         bump,
     )]
     pub user_profile: Account<'info, UserProfile>,

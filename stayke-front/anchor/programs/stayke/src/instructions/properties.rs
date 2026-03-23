@@ -12,7 +12,7 @@ pub struct InitProperty<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", user_profile.dni.as_ref()],
+        seeds = [b"user", user_profile.dni.as_ref(), signer.key().as_ref()],
         constraint = signer.key() == user_profile.owner @ StaykeErrors::UnauthorizedHost,
         bump = user_profile.bump,
     )]
@@ -62,7 +62,7 @@ pub struct ModifyProperty<'info> {
 
     #[account(
         mut,
-        seeds = [b"user", user_profile.dni.as_ref()],
+        seeds = [b"user", user_profile.dni.as_ref(), signer.key().as_ref()],
         constraint = signer.key() == user_profile.owner @ StaykeErrors::UnauthorizedHost,
         constraint = user_profile.listing_count > 0 @ StaykeErrors::NoPropertiesToModify,
         bump = user_profile.bump,

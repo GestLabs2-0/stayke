@@ -76,7 +76,11 @@ pub struct VerifyIdentity<'info> {
     )]
     pub config: Account<'info, PlatformConfig>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        seeds = [b"user", user_profile.dni.as_ref(), user_profile.owner.as_ref()],
+        bump = user_profile.bump,
+    )]
     pub user_profile: Account<'info, UserProfile>,
 
     /// CHECK: Reserved for future Civic Gateway Token integration.
@@ -118,6 +122,8 @@ pub struct PenalizeUser<'info> {
 
     #[account(
         mut,
+        seeds = [b"user", penalized_profile.dni.as_ref(), penalized_profile.owner.as_ref()],
+        bump = penalized_profile.bump,
         constraint = !penalized_profile.is_banned @ StaykeErrors::UserBanned
     )]
     pub penalized_profile: Account<'info, UserProfile>,

@@ -713,7 +713,7 @@ pub fn ins_complete_stay(ctx: Context<CompleteStay>) -> Result<()> {
         token_interface::transfer_checked(cpi_ctx, fee, decimals)?;
     }
 
-    let cpi_close = token_interface::CloseAccount {
+    let cpi_close = CloseAccount {
         account: ctx.accounts.escrow_token_account.to_account_info(),
         destination: ctx.accounts.client.to_account_info(),
         authority: booking.to_account_info(),

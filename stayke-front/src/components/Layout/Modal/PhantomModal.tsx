@@ -52,13 +52,13 @@ export const PhantomModal = ({ onClose }: PhantomModalProps) => {
       if (didTimeout.value) return;
       clearTimeout(timeoutRef.current!);
 
-      const address = (window as any)?.phantom?.solana?.publicKey?.toString();
+      const address = ((window as unknown) as { phantom?: { solana?: { publicKey?: { toString(): string } } } })?.phantom?.solana?.publicKey?.toString();
       if (!address) throw new Error("No public key");
 
       // Verifica si esta address está registrada
       // Si es una address nueva → registered: false → /register con su propio DNI
       // Si ya existe → registered: true → login directo
-      const { registered } = await login(address, "", "");
+      const { registered } = await login(address);
       console.log("address:", address, "registered:", registered);
 
       onClose();
@@ -111,7 +111,7 @@ export const PhantomModal = ({ onClose }: PhantomModalProps) => {
                 Connection failed
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Couldn't connect to Phantom. Make sure your wallet is unlocked
+                Couldn&apos;t connect to Phantom. Make sure your wallet is unlocked
                 and try again.
               </p>
             </div>

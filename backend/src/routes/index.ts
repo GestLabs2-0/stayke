@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { propertyRoutes } from "./property.routes.js";
+import { solanaRouter } from "./solana.routes.js";
 import { userRoutes } from "./user.routes.js";
 
 const apiRouter = Router();
@@ -10,6 +11,7 @@ apiRouter.get("/", (req, res) => {
 });
 
 apiRouter.use("/properties", propertyRoutes);
+apiRouter.use("/solana", solanaRouter);
 apiRouter.use("/users", userRoutes);
 
 /** Master router mounted at /api/v1 */

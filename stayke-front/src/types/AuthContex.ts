@@ -18,6 +18,7 @@ export interface User {
   image?: string;
   reputation: number;
   reviews?: Review[];
+  pdaKey?: string;
 }
 export interface RegisterPayload {
   firstName: string;
@@ -36,11 +37,7 @@ export interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isRegistered: boolean;
-  login: (
-    address: string,
-    signature: string,
-    nonce: string
-  ) => Promise<{ registered: boolean }>;
+  login: (address: string) => Promise<{ registered: boolean }>;
   registerUser: (data: RegisterPayload) => Promise<{ success: boolean }>;
   logout: () => void;
   setUser: (user: User) => void;

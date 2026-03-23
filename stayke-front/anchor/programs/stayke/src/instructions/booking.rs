@@ -46,7 +46,7 @@ pub struct CreateBooking<'info> {
         constraint = property_host.deposit >= config.minimum_deposit @ StaykeErrors::InsufficientDeposit,
         constraint = property_host.is_host @ StaykeErrors::UserNotHost
     )]
-    pub property_host: Account<'info, UserProfile>,
+    pub property_host: Box<Account<'info, UserProfile>>,
 
     #[account(
         init,
@@ -58,7 +58,7 @@ pub struct CreateBooking<'info> {
     pub booking: Account<'info, Booking>,
 
     #[account(seeds = [b"config"], bump = config.bump)]
-    pub config: Account<'info, PlatformConfig>,
+    pub config: Box<Account<'info, PlatformConfig>>,
 
     pub system_program: Program<'info, System>,
 
@@ -115,13 +115,14 @@ pub fn ins_create_booking(
         status: status.clone(),
         total_price: property.price_per_night * days,
         days,
+        review: 0,
         check_in_date: start_date,
         check_out_date: end_date,
         deposit: 0,
-        review: 0,
         check_in,
         check_out,
         bump,
+        escrow_bump: 0,
     };
 
     booking.set_inner(booking_inner);
@@ -520,6 +521,7 @@ pub fn ins_accept_reserve(ctx: Context<ClientAcceptReserve>) -> Result<()> {
     token_interface::transfer_checked(cpi_context, booking.total_price, decimals)?;
 
     booking.status = BookingStatus::Active;
+    booking.escrow_bump = ctx.bumps.escrow_token_account;
     ctx.accounts.property.booking_active = Some(booking.key());
     ctx.accounts.client_profile.active_booking = Some(booking.key());
 
@@ -586,5 +588,205 @@ pub fn ins_client_reject_reserve(ctx: Context<ClientRejectReserve>) -> Result<()
         status: BookingStatus::Cancelled,
         booking: booking.key()
     });
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Complete stay
+// ---------------------------------------------------------------------------
+
+#[derive(Accounts)]
+pub struct CompleteStay<'info> {
+    /// The guest — must be the one who made the booking.
+    #[account(mut)]
+    pub client: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [b"user", client_profile.dni.as_ref()],
+        bump = client_profile.bump,
+        constraint = client.key() == client_profile.owner @ StaykeErrors::UnauthorizedUser,
+        constraint = !client_profile.is_banned @ StaykeErrors::UserBanned,
+    )]
+    pub client_profile: Account<'info, UserProfile>,
+
+    #[account(
+        mut,
+        seeds = [b"user", host_profile.dni.as_ref()],
+        bump = host_profile.bump,
+    )]
+    pub host_profile: Account<'info, UserProfile>,
+
+    #[account(
+        mut,
+        seeds = [b"property", booking.host.as_ref(), property.listing_id.to_le_bytes().as_ref()],
+        bump = property.bump,
+        constraint = property.host == booking.host @ StaykeErrors::InvalidHost,
+    )]
+    pub property: Account<'info, Property>,
+
+    #[account(
+        mut,
+        seeds = [b"booking", booking.property.as_ref(), booking.guest.as_ref(), booking.check_in.to_le_bytes().as_ref()],
+        bump = booking.bump,
+        constraint = booking.guest == client_profile.key() @ StaykeErrors::UnauthorizedUser,
+        constraint = booking.status == BookingStatus::Active @ StaykeErrors::BookingNotActive,
+    )]
+    pub booking: Box<Account<'info, Booking>>,
+
+    #[account(seeds = [b"config"], bump = config.bump)]
+    pub config: Box<Account<'info, PlatformConfig>>,
+
+    /// Escrow token account holding the booking payment.
+    #[account(
+        mut,
+        seeds = [b"escrow", booking.key().as_ref()],
+        bump = booking.escrow_bump,
+        token::mint = mint,
+        token::authority = booking,
+    )]
+    pub escrow_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    /// Host's USDC token account — receives (total_price - fee).
+    #[account(mut, constraint = host_token_account.key() == host_profile.token_account @ StaykeErrors::InvalidTokenAccount)]
+    pub host_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    /// Platform vault token account — receives the fee.
+    #[account(
+        mut,
+        constraint = platform_vault_token_account.key() == config.platform_vault @ StaykeErrors::InvalidTreasuryAccount,
+    )]
+    pub platform_vault_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    #[account(mut, constraint = mint.key() == config.usdc_mint @ StaykeErrors::InvalidTokenMint)]
+    pub mint: Box<InterfaceAccount<'info, Mint>>,
+
+    pub token_program: Interface<'info, TokenInterface>,
+}
+
+pub fn ins_complete_stay(ctx: Context<CompleteStay>) -> Result<()> {
+    let booking = &mut ctx.accounts.booking;
+    let config = &ctx.accounts.config;
+    let decimals = ctx.accounts.mint.decimals;
+
+    let fee = (booking.total_price as u128)
+        .saturating_mul(config.fee_bps as u128)
+        .saturating_div(10_000) as u64;
+    let host_amount = booking.total_price.saturating_sub(fee);
+
+    // Seeds to sign as the booking PDA (authority of the escrow)
+    let booking_seeds: &[&[&[u8]]] = &[&[
+        b"booking",
+        booking.property.as_ref(),
+        booking.guest.as_ref(),
+        &booking.check_in.to_le_bytes(),
+        &[booking.bump],
+    ]];
+
+    if host_amount > 0 {
+        let cpi_accounts = TransferChecked {
+            from: ctx.accounts.escrow_token_account.to_account_info(),
+            to: ctx.accounts.host_token_account.to_account_info(),
+            authority: booking.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+        };
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info().key.clone(),
+            cpi_accounts,
+            booking_seeds,
+        );
+        token_interface::transfer_checked(cpi_ctx, host_amount, decimals)?;
+    }
+
+    if fee > 0 {
+        let cpi_accounts = TransferChecked {
+            from: ctx.accounts.escrow_token_account.to_account_info(),
+            to: ctx.accounts.platform_vault_token_account.to_account_info(),
+            authority: booking.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+        };
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info().key.clone(),
+            cpi_accounts,
+            booking_seeds,
+        );
+        token_interface::transfer_checked(cpi_ctx, fee, decimals)?;
+    }
+
+    let cpi_close = token_interface::CloseAccount {
+        account: ctx.accounts.escrow_token_account.to_account_info(),
+        destination: ctx.accounts.client.to_account_info(),
+        authority: booking.to_account_info(),
+    };
+    let cpi_ctx = CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info().key.clone(),
+        cpi_close,
+        booking_seeds,
+    );
+    token_interface::close_account(cpi_ctx)?;
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct CloseBooking<'info> {
+    #[account(mut)]
+    pub client: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [b"user", client_profile.dni.as_ref()],
+        bump = client_profile.bump,
+        constraint = client.key() == client_profile.owner @ StaykeErrors::UnauthorizedUser,
+        constraint = !client_profile.is_banned @ StaykeErrors::UserBanned,
+    )]
+    pub client_profile: Account<'info, UserProfile>,
+
+    #[account(
+        mut,
+        seeds = [b"user", host_profile.dni.as_ref()],
+        bump = host_profile.bump,
+    )]
+    pub host_profile: Account<'info, UserProfile>,
+
+    #[account(
+        mut,
+        seeds = [b"property", booking.host.as_ref(), property.listing_id.to_le_bytes().as_ref()],
+        bump = property.bump,
+        constraint = property.host == booking.host @ StaykeErrors::InvalidHost,
+    )]
+    pub property: Account<'info, Property>,
+
+    #[account(
+        mut,
+        close = client,
+        seeds = [b"booking", booking.property.as_ref(), booking.guest.as_ref(), booking.check_in.to_le_bytes().as_ref()],
+        bump = booking.bump,
+        constraint = booking.guest == client_profile.key() @ StaykeErrors::UnauthorizedUser,
+        constraint = booking.status == BookingStatus::Active @ StaykeErrors::BookingNotActive,
+    )]
+    pub booking: Account<'info, Booking>,
+}
+
+pub fn ins_close_booking(ctx: Context<CloseBooking>, score: u8) -> Result<()> {
+    require!(score >= 1 && score <= 5, StaykeErrors::InvalidScore);
+
+    let booking = &ctx.accounts.booking;
+    let booking_key = booking.key();
+
+    ctx.accounts.client_profile.completed_stays += 1;
+    ctx.accounts.client_profile.active_booking = None;
+
+    ctx.accounts.host_profile.hosted_stays += 1;
+    ctx.accounts.host_profile.total_score_host += score as u64;
+    ctx.accounts.host_profile.host_reviews += 1;
+
+    ctx.accounts.property.booking_active = None;
+
+    emit!(BookingUpdateStatus {
+        status: BookingStatus::Completed,
+        booking: booking_key,
+    });
+
     Ok(())
 }

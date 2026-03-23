@@ -10,10 +10,15 @@ pub struct PlatformConfig {
     #[max_len(MAX_ADMINS)]
     pub admins: Vec<Pubkey>,
 
-    pub treasury: Pubkey,
-    pub escrow_treasury: Pubkey,
+    pub treasury: Pubkey,         // Token account whose authority is the PDA [b"treasury"]
+    pub treasury_bump: u8,        // Bump of the treasury PDA (used to sign CPIs)
+
+    pub platform_vault: Pubkey,      // Token account whose authority is the PDA [b"platform_vault"]
+    pub platform_vault_bump: u8,     // Bump of the platform_vault PDA (used to sign CPIs)
 
     pub usdc_mint: Pubkey,
+
+    pub fee_bps: u16,               // Platform fee in basis points (e.g. 500 = 5%)
 
     pub retribution_bps_low: u16,
     pub retribution_bps_medium: u16,
@@ -34,6 +39,7 @@ pub struct UserProfile {
     pub deposit_timestamp: i64,
     pub dni: [u8; 32],     // Hash of the user's DNI (or any unique identifier)
     pub is_verified: bool, // Indicates if the user has been verified by an authority TODO: Implement authority verification
+    pub token_account: Pubkey, // The user's token account address
 
     pub is_banned: bool,
 
@@ -101,9 +107,10 @@ pub struct Booking {
     pub check_in_date: DateComponents,
     pub check_out_date: DateComponents,
     pub total_price: u64,
-    pub review: u8, // Goes from 0 to 5, where 0 means no review and 1-5 are the actual ratings
+    pub review: u8,          // Goes from 0 to 5, where 0 means no review and 1-5 are the actual ratings
     pub status: BookingStatus,
-    pub bump: u8, // Bump for PDA
+    pub escrow_bump: u8,     // Bump of the escrow token account PDA — needed to sign CPIs in complete_stay
+    pub bump: u8,            // Bump for the booking PDA
 }
 
 #[derive(InitSpace, PartialEq, Eq, AnchorSerialize, AnchorDeserialize, Clone, Debug)]
@@ -112,8 +119,52 @@ pub enum BookingStatus {
     HostAccepted,    // The host has accepted the booking but the guest has not yet checked in
     Active,          // The guest has checked in and the booking is active
     Completed,       // The guest has checked out and the booking is completed, pending review
-    Cancelled, // The booking has been cancelled by either the guest or the host before check-in
-    Disputed,  // The booking is in dispute, pending resolution by the platform admins
+    Cancelled,       // The booking has been cancelled by either the guest or the host before check-in
+    Disputed,        // The booking is in dispute, pending resolution by the platform admins
     DisputeResolved, // The dispute has been resolved by the platform admins, pending review
     DisputeRejected, // The dispute has been rejected by the platform admins, pending review
 }
+
+// ---------------------------------------------------------------------------
+// Dispute
+// ---------------------------------------------------------------------------
+
+#[account]
+#[derive(InitSpace)]
+pub struct Dispute {
+    pub booking: Pubkey,        // The booking that is in dispute
+    pub opened_by: Pubkey,      // The user (guest or host) who opened the dispute
+    pub reason: DisputeReason,  // On-chain category of the dispute
+    pub status: DisputeStatus,
+    pub bump: u8,
+}
+
+#[derive(InitSpace, PartialEq, Eq, AnchorSerialize, AnchorDeserialize, Clone, Debug)]
+pub enum DisputeStatus {
+    Open,
+    Resolved, // Escrow released to one of the parties
+    Rejected, // Dispute rejected by admin; booking proceeds as normal
+}
+
+/// General category of a dispute — kept on-chain as a permanent record.
+#[derive(InitSpace, PartialEq, Eq, AnchorSerialize, AnchorDeserialize, Clone, Debug)]
+pub enum DisputeReason {
+    PropertyNotAsDescribed, // Property doesn't match the listing
+    CheckInIssues,          // Problems accessing the property at check-in
+    CheckOutIssues,         // Host-side problems reported at check-out
+    CleanlinessIssues,      // Property was not clean upon arrival
+    NoShow,                 // Guest or host did not show up / was not reachable
+    DamageClaim,            // Host claims the guest damaged the property
+    RefundRequest,          // Guest requests a refund for a valid reason
+    Other,                  // Catch-all for any other reason
+}
+
+/// Severity level used by `penalize_user`.
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
+pub enum PenaltySeverity {
+    Low,
+    Medium,
+    High,
+}
+
+

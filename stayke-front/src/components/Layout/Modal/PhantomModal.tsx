@@ -52,15 +52,21 @@ export const PhantomModal = ({ onClose }: PhantomModalProps) => {
       if (didTimeout.value) return;
       clearTimeout(timeoutRef.current!);
 
-      // ── Verifica si está registrado ───────────────────────────────────
       const address = (window as any)?.phantom?.solana?.publicKey?.toString();
-      const { registered } = await login(address ?? "", "", "");
-      console.log("registered:", registered);
+      if (!address) throw new Error("No public key");
+
+      // Verifica si esta address está registrada
+      // Si es una address nueva → registered: false → /register con su propio DNI
+      // Si ya existe → registered: true → login directo
+      const { registered } = await login(address, "", "");
+      console.log("address:", address, "registered:", registered);
 
       onClose();
 
       if (!registered) {
         router.push("/register");
+        // En /register, la wallet se toma de wallet?.account?.address
+        // Cada usuario tiene su propio DNI único
       }
     } catch {
       if (!didTimeout.value) {

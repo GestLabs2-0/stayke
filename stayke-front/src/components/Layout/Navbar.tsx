@@ -9,6 +9,10 @@ import {
   PlusSquare,
   LogOut,
   ChevronDown,
+  CalendarCheck,
+  Star,
+  Copy,
+  Check,
 } from "lucide-react";
 import { useWalletConnection } from "@solana/react-hooks";
 
@@ -23,12 +27,23 @@ import { WalletButton } from "../WalletButton";
 import { PhantomModal } from "./Modal/PhantomModal";
 import { navLinks } from "@/src/constants";
 import { useAuth } from "@/src/Context/AuthContext";
+import { useSolBalance } from "@/src/Hooks/useSolanaBalance";
 
 const UserMenu = () => {
   const { user, logout } = useAuth();
-  const { disconnect } = useWalletConnection();
+  const { disconnect, wallet } = useWalletConnection();
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const router = useRouter();
+
+  const address = wallet?.account?.address?.toString() ?? "";
+  const { balance, isLoading: loadingBalance } = useSolBalance(address);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(address);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleLogout = () => {
     disconnect();
@@ -39,48 +54,157 @@ const UserMenu = () => {
 
   return (
     <div className="relative">
+      {/* ── Trigger ── */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground hover:border-primary transition-colors"
+        className="inline-flex items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium text-foreground hover:border-primary hover:shadow-glow transition-all duration-200"
       >
-        <div className="flex h-6 w-6 items-center justify-center rounded-full gradient-solana shrink-0">
+        <div className="relative flex h-7 w-7 items-center justify-center rounded-full gradient-solana shrink-0">
           <User className="h-3.5 w-3.5 text-primary-foreground" />
+          <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-card" />
         </div>
-        <span>{user?.firstName}</span>
-        <ChevronDown className="h-3 w-3 text-muted-foreground" />
+        <span className="max-w-20 truncate">{user?.firstName}</span>
+        <ChevronDown
+          className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-52 rounded-xl border border-border bg-card p-1 shadow-card z-50">
-          <Link
-            href="/profile"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <User className="h-3.5 w-3.5" />
-            My Profile
-          </Link>
+        <div className="absolute right-0 mt-2.5 w-72 rounded-2xl border border-border bg-card shadow-card z-50 overflow-hidden">
+          {/* ── Wallet banner ── */}
+          <div className="relative overflow-hidden px-4 pt-4 pb-5">
+            {/* Fondo decorativo */}
+            <div className="absolute inset-0 gradient-solana opacity-10" />
+            <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
+            <div className="absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-secondary/10 blur-xl" />
 
-          {user?.isHost && (
+            {/* Contenido */}
+            <div className="relative">
+              {/* Top: Phantom pill + copy */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-background/60 backdrop-blur-sm px-2.5 py-1">
+                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span className="text-xs font-medium text-foreground">
+                    Phantom
+                  </span>
+                </div>
+
+                <button
+                  onClick={handleCopy}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-background/60 backdrop-blur-sm px-2.5 py-1 text-xs text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-3 w-3 text-emerald-400" />
+                      <span className="text-emerald-400">Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3 w-3" />
+                      {address.slice(0, 4)}…{address.slice(-4)}
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Balance */}
+              {/* //TODO:Fetch getBalance() */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1 tracking-wider uppercase">
+                  Balance
+                </p>
+                <div className="flex items-baseline gap-2">
+                  {loadingBalance ? (
+                    <div className="h-8 w-24 rounded-lg bg-muted/40 animate-pulse" />
+                  ) : (
+                    <>
+                      <span className="font-display text-3xl font-bold text-foreground">
+                        {balance !== null ? balance.toFixed(4) : "—"}
+                      </span>
+                      <span className="text-sm font-medium text-muted-foreground">
+                        SOL
+                      </span>
+                    </>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {balance !== null
+                    ? `≈ $${(balance * 150).toFixed(2)} USD` // TODO: precio real de SOL
+                    : "≈ — USD"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Stats row ─────────────────────────────────────────────── */}
+          <div className="grid grid-cols-2 divide-x divide-border border-b border-border">
+            <div className="px-4 py-3">
+              <p className="text-xs text-muted-foreground mb-1">Reputation</p>
+              <div className="flex items-center gap-1">
+                <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+                <span className="text-sm font-bold text-foreground">
+                  {user?.reputation ?? "—"}
+                </span>
+                <span className="text-xs text-muted-foreground">/ 5.0</span>
+              </div>
+            </div>
+            <div className="px-4 py-3">
+              <p className="text-xs text-muted-foreground mb-1">Role</p>
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold  
+                  
+                  ${
+                    user?.isHost
+                      ? "bg-primary/10 text-primary"
+                      : "bg-primary/20 text-white"
+                  }`}
+              >
+                <div className="h-2 w-2 rounded-full bg-emerald-400 mr-2" />
+                {user?.isHost ? "Host & Client" : "Client"}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-1.5">
             <Link
-              href="/listPropertys"
+              href="/profile"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
-              <PlusSquare className="h-3.5 w-3.5" />
-              List Property
+              <User className="h-4 w-4 shrink-0" />
+              My Profile
             </Link>
-          )}
 
-          <div className="my-1 border-t border-border" />
+            <Link
+              href="/bookings"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <CalendarCheck className="h-4 w-4 shrink-0" />
+              My Bookings
+            </Link>
 
-          <button
-            onClick={handleLogout}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-muted transition-colors"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-            Disconnect
-          </button>
+            {user?.isHost && (
+              <Link
+                href="/listPropertys"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              >
+                <PlusSquare className="h-4 w-4 shrink-0" />
+                Add Property
+              </Link>
+            )}
+
+            <div className="my-1 border-t border-border" />
+
+            <button
+              onClick={handleLogout}
+              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              Disconnect
+            </button>
+          </div>
         </div>
       )}
     </div>

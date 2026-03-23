@@ -45,7 +45,7 @@ export const listAllUsers = async (_req: RequestValidatedAPI, res: ResponseAPI):
 export const createUser = async (req: RequestValidatedAPI<CreateUserBody>, res: ResponseAPI): Promise<void> => {
   try {
     const repo = getUserRepository();
-    const { address, apellido, dni, email, nombre, phone, profileImage, wallet } = req.body;
+    const { address, apellido, dni, email, isHost, nombre, phone, profileImage, wallet } = req.body;
 
     // Wallet uniqueness check
     const existingByWallet = await repo.findOne({ where: { wallet } });
@@ -63,6 +63,10 @@ export const createUser = async (req: RequestValidatedAPI<CreateUserBody>, res: 
       }
     }
 
+    // Determine initial roles
+    const roles: UserRole[] = [UserRole.CLIENT];
+    if (isHost) roles.push(UserRole.HOST);
+
     const user = repo.create({
       address,
       apellido,
@@ -71,6 +75,7 @@ export const createUser = async (req: RequestValidatedAPI<CreateUserBody>, res: 
       nombre,
       phone,
       profileImage,
+      roles,
       wallet,
     });
 

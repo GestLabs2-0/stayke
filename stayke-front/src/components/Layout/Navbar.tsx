@@ -186,7 +186,7 @@ const UserMenu = () => {
 
             {user?.isHost && (
               <Link
-                href="/listPropertys"
+                href="/list-property"
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               >

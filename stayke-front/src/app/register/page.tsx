@@ -14,6 +14,7 @@ import { StepIndicator } from "@/src/components/RegisterForms/StepIndicator";
 import { STEP_COMPONENTS } from "@/src/components/RegisterForms/StepRenderer";
 import { useAuth } from "@/src/Context/AuthContext";
 import { STEPS } from "@/src/constants";
+import { handleApiError } from "@/src/helpers/apiError";
 
 //Type
 import type { RegisterFormData } from "@/src/types/RegisterFormData";
@@ -62,13 +63,18 @@ export const Register = () => {
 
     console.log("Submit payload:", payload);
 
-    // mockRegister guarda el user en AuthContext y devuelve success: true
-    // TODO: cuando tengas backend, mockRegister hace fetch a /api/auth/register
-    const { success } = await registerUser(payload);
+    try {
+      // mockRegister guarda el user en AuthContext y devuelve success: true
+      // TODO: cuando tengas backend, mockRegister hace fetch a /api/auth/register
+      const { success } = await registerUser(payload);
 
-    if (success) {
-      router.push("/"); // → home con UserMenu ya visible
-    } else {
+      if (success) {
+        router.push("/"); // → home con UserMenu ya visible
+      } else {
+        setSubmitting(false);
+      }
+    } catch (error) {
+      handleApiError(error, "Register");
       setSubmitting(false);
     }
   };

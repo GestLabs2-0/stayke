@@ -36,11 +36,7 @@ export interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isRegistered: boolean;
-  login: (
-    address: string,
-    signature: string,
-    nonce: string
-  ) => Promise<{ registered: boolean }>;
+  login: (address: string) => Promise<{ registered: boolean }>;
   registerUser: (data: RegisterPayload) => Promise<{ success: boolean }>;
   logout: () => void;
   setUser: (user: User) => void;

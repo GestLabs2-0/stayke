@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/src/Context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   User,
   Star,
@@ -19,6 +19,10 @@ import Link from "next/link";
 import { truncate } from "@/src/helpers/Truncate";
 import { useSolBalance } from "@/src/Hooks/useSolanaBalance";
 import type { Review } from "@/src/types/AuthContex";
+import { propertyService } from "@/src/services/propertyService";
+import { mapBackendPropertyToListing } from "@/src/helpers/mapProperty";
+import type { ListingCardProps } from "@/src/types/ListingCards";
+import { Loader2 } from "lucide-react";
 
 export default function ProfilePage() {
   const { user, isRegistered, isLoading, logout } = useAuth();
@@ -28,9 +32,29 @@ export default function ProfilePage() {
   const address = wallet?.account?.address?.toString() ?? user?.wallet ?? "";
   const { balance, isLoading: loadingBalance } = useSolBalance(address);
 
+  const [myProperties, setMyProperties] = useState<ListingCardProps[]>([]);
+  const [loadingProps, setLoadingProps] = useState(false);
+
   useEffect(() => {
-    if (!isLoading && !isRegistered) router.push("/");
-  }, [isRegistered, isLoading]);
+    if (!isLoading && !isRegistered) {
+      router.push("/");
+    }
+
+    if (user?.isHost) {
+      const fetchMyProps = async () => {
+        setLoadingProps(true);
+        try {
+          const props = await propertyService.listPropertiesByUser(user.wallet);
+          setMyProperties(props.map(mapBackendPropertyToListing));
+        } catch (error) {
+          console.error("Error fetching my properties:", error);
+        } finally {
+          setLoadingProps(false);
+        }
+      };
+      fetchMyProps();
+    }
+  }, [isRegistered, isLoading, user?.wallet, user?.isHost, router]);
 
   if (isLoading || !user) {
     return (
@@ -175,6 +199,54 @@ export default function ProfilePage() {
             ))}
           </div>
         </div>
+
+        {/* ── My Listings (Host only) ── */}
+        {user.isHost && (
+          <div className="rounded-2xl border border-border bg-card p-5 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-sm font-bold text-foreground uppercase tracking-wider">
+                My Properties
+              </h2>
+              <Link
+                href="/listPropertys"
+                className="text-xs text-primary hover:underline"
+              >
+                Create new →
+              </Link>
+            </div>
+            
+            {loadingProps ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : myProperties.length === 0 ? (
+              <p className="text-sm text-muted-foreground italic text-center py-4">
+                You haven&apos;t listed any properties yet.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {myProperties.map((prop) => (
+                  <div
+                    key={prop.id}
+                    className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-3 hover:border-primary/30 transition-colors"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        {prop.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {prop.location}
+                      </p>
+                    </div>
+                    <span className="font-display text-sm font-bold text-gradient shrink-0">
+                      ${prop.price}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── Bookings preview ── */}
         <div className="rounded-2xl border border-border bg-card p-5 mb-6">

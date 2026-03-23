@@ -118,7 +118,7 @@ pub struct PenalizeUser<'info> {
 
     #[account(
         mut,
-        constraint = !penalized_profile.is_banned @ StaykeErrors::UserAlreadyBanned
+        constraint = !penalized_profile.is_banned @ StaykeErrors::UserBanned
     )]
     pub penalized_profile: Account<'info, UserProfile>,
 

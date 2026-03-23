@@ -3,12 +3,6 @@ use anchor_lang::prelude::error_code;
 #[error_code]
 pub enum StaykeErrors {
     // User profile errors
-    #[msg("User profile already exists")]
-    UserProfileAlreadyExists,
-    #[msg("User profile not found")]
-    UserProfileNotFound,
-    #[msg("User is currently in an active booking and cannot modify their profile")]
-    UserInActiveBooking,
     #[msg("Only the user can modify their profile")]
     UnauthorizedUser,
     #[msg("User is banned")]
@@ -21,10 +15,6 @@ pub enum StaykeErrors {
     InsufficientDeposit,
 
     // Property Errors
-    #[msg("Property already exists")]
-    PropertyAlreadyExists,
-    #[msg("Property not found")]
-    PropertyNotFound,
     #[msg("Property is currently in an active booking and cannot be modified")]
     PropertyInActiveBooking,
     #[msg("Only the host can modify their property")]
@@ -33,12 +23,8 @@ pub enum StaykeErrors {
     NoPropertiesToModify,
 
     // BookingErrors
-    #[msg("Booking already exists for this property")]
-    BookingAlreadyExists,
     #[msg("Only the client can make a booking for themselves")]
     UnauthorizedBooking,
-  #[msg("Host can only accept or cancelled a pending booking")]
-    OnlyAcceptOrCancelled,
     #[msg("Invalid booking status for this action")]
     InvalidBookingStatus,
     #[msg("Invalid booking dates: check-in must be before check-out")]
@@ -49,12 +35,6 @@ pub enum StaykeErrors {
     DatesUnbooked,
     #[msg("Invalid booking days account for the given dates")]
     InvalidBookingDaysAccount,
-    #[msg("Only the client can cancel their booking")]
-    UnauthorizedCancellation,
-    #[msg("Only the host can cancel a booking for their property")]
-    UnauthorizedHostCancellation,
-    #[msg("Cannot cancel a booking that has already been completed")]
-    CannotCancelCompletedBooking,
     #[msg("Host cannot book their own property")]
     HostCannotBookOwnProperty,
     #[msg("Invalid host for this property")]
@@ -73,14 +53,8 @@ pub enum StaykeErrors {
     WrongGuessPassed,
 
     // DisputeErrors
-    #[msg("Dispute already exists for this booking")]
-    DisputeAlreadyExists,
     #[msg("Dispute not found")]
     DisputeNotFound,
-    #[msg("Only the client or host can raise a dispute")]
-    UnauthorizedDispute,
-    #[msg("Unauthorized resolution attempt by a non-admin")]
-    UnauthorizedResolution,
 
     // AdminErrors
     #[msg("Unauthorized admin action")]
@@ -101,10 +75,6 @@ pub enum StaykeErrors {
     // DepositErrors
     #[msg("Deposit amount is below the minimum required")]
     DepositTooLow,
-    #[msg("No active booking found for this user")]
-    NoActiveBooking,
-    #[msg("Only the client can make a deposit for their booking")]
-    UnauthorizedDeposit,
     #[msg("The treasury account is not the expected one")]
     InvalidTreasuryAccount,
     #[msg("The token mint does not match the configured USDC mint")]
@@ -117,21 +87,12 @@ pub enum StaykeErrors {
     InsufficientDepositBalance,
 
     // CompleteStayErrors
-    #[msg("Only the guest can complete the stay")]
-    UnauthorizedCompletion,
     #[msg("Booking must be in Active status to complete the stay")]
     BookingNotActive,
-
-    // PenalizeErrors
-    #[msg("The affected user account does not match the booking")]
-    InvalidAffectedUser,
 
     // VerifyErrors
     #[msg("User is already verified")]
     AlreadyVerified,
-
-    #[msg("User is already banned")]
-    UserAlreadyBanned,
 
     // DisputeErrors (extra)
     #[msg("Caller is not a party to this booking")]

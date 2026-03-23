@@ -38,19 +38,46 @@ const mockLogin = async (
   // return res.json();
 
   // Cambia a `return { registered: false }` para probar flujo de registro
-  return { registered: false };
-  // return {
-  //   registered: true,
-  //   user: {
-  //     id: "mock-001",
-  //     firstName: "david",
-  //     lastName: "Doe",
-  //     email: "john@stayke.io",
-  //     wallet: address,
-  //     isHost: true,
-  //     reputation: 4.8,
-  //   },
-  // };
+  // return { registered: false };
+  return {
+    registered: true,
+    user: {
+      id: "mock-001",
+      firstName: "Alberto",
+      lastName: "Az",
+      email: "alberto@stayke.io",
+      phone: "+1 (555) 000-0000",
+      wallet: address,
+      isHost: true,
+      reputation: 4.8,
+      reviews: [
+        {
+          id: "r1",
+          author: "Sarah K.",
+          rating: 5,
+          comment:
+            "Amazing host! The property was exactly as described and Alberto was super responsive throughout the stay.",
+          date: "Mar 2026",
+        },
+        {
+          id: "r2",
+          author: "James R.",
+          rating: 5,
+          comment:
+            "Incredible experience. Clean, well-equipped, and the location was perfect. Would definitely book again.",
+          date: "Feb 2026",
+        },
+        {
+          id: "r3",
+          author: "Mia L.",
+          rating: 4,
+          comment:
+            "Great stay overall. The host was kind and the check-in was seamless.",
+          date: "Jan 2026",
+        },
+      ],
+    },
+  };
 };
 
 const mockRegister = async (

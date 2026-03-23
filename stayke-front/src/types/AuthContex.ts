@@ -1,14 +1,24 @@
+export interface Review {
+  id: string;
+  author: string;
+  avatar?: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
 export interface User {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
+  phone?: string;
   wallet: string;
   isHost: boolean;
   image?: string;
   reputation: number;
+  reviews?: Review[];
 }
-
 export interface RegisterPayload {
   firstName: string;
   lastName: string;

@@ -11,11 +11,11 @@ pub enum StaykeErrors {
     UserInActiveBooking,
     #[msg("Only the user can modify their profile")]
     UnauthorizedUser,
-    #[msg("User is banned and cannot perform this action")]
+    #[msg("User is banned")]
     UserBanned,
-    #[msg("User is not verified and cannot perform this action")]
+    #[msg("User is not verified")]
     UserNotVerified,
-    #[msg("User is not a host and cannot perform this action")]
+    #[msg("User is not a host")]
     UserNotHost,
     #[msg("User does not have enough deposit to perform this action")]
     InsufficientDeposit,
@@ -37,9 +37,7 @@ pub enum StaykeErrors {
     BookingAlreadyExists,
     #[msg("Only the client can make a booking for themselves")]
     UnauthorizedBooking,
-    #[msg("Only the client can complete a booking for themselves")]
-    UnauthorizedCompletion,
-    #[msg("Host can only accept or cancelled a pending booking")]
+  #[msg("Host can only accept or cancelled a pending booking")]
     OnlyAcceptOrCancelled,
     #[msg("Invalid booking status for this action")]
     InvalidBookingStatus,
@@ -111,4 +109,49 @@ pub enum StaykeErrors {
     InvalidTreasuryAccount,
     #[msg("The token mint does not match the configured USDC mint")]
     InvalidTokenMint,
+
+    // WithdrawErrors
+    #[msg("User has an active booking and cannot withdraw their guarantee")]
+    WithdrawWithActiveBooking,
+    #[msg("Insufficient guarantee balance to withdraw the requested amount")]
+    InsufficientDepositBalance,
+
+    // CompleteStayErrors
+    #[msg("Only the guest can complete the stay")]
+    UnauthorizedCompletion,
+    #[msg("Booking must be in Active status to complete the stay")]
+    BookingNotActive,
+
+    // PenalizeErrors
+    #[msg("The affected user account does not match the booking")]
+    InvalidAffectedUser,
+
+    // VerifyErrors
+    #[msg("User is already verified")]
+    AlreadyVerified,
+
+    #[msg("User is already banned")]
+    UserAlreadyBanned,
+
+    // DisputeErrors (extra)
+    #[msg("Caller is not a party to this booking")]
+    NotAPartyToBooking,
+    #[msg("Booking must be in Disputed status to resolve")]
+    BookingNotInDispute,
+    #[msg("Host share must be between 0 and 10000 basis points")]
+    InvalidResolutionShares,
+
+    // ConfigurationBPS
+    #[msg("Invalid retribution basis points")]
+    InvalidRetributionBps,
+    #[msg("Invalid fee basis points")]
+    InvalidFeeBps,
+
+    // ScoreErrors
+    #[msg("Invalid score. Must be between 1 and 5")]
+    InvalidScore,
+
+    // TokenAccountErrors
+    #[msg("Invalid token account")]
+    InvalidTokenAccount,
 }

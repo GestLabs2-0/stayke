@@ -1,3 +1,3 @@
-npm run test:run
-npm run type-check
-npx lint-staged
+yarn test:run
+yarn type-check
+yarn lint-staged

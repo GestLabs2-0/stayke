@@ -6,6 +6,9 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from "./errors";
-export * from "./instructions";
-export * from "./programs";
+export * from "./booking";
+export * from "./bookingDays";
+export * from "./dispute";
+export * from "./platformConfig";
+export * from "./property";
+export * from "./userProfile";

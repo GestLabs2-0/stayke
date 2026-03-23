@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>anchor/caller</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap"
+			rel="stylesheet" />
+		<style>
+			:root {
+				--bg: #080a0d;
+				--surface: #0d1117;
+				--surface2: #131820;
+				--border: #1a2130;
+				--border2: #222d3e;
+				--accent: #00d4a0;
+				--accent2: #3b82f6;
+				--warn: #f59e0b;
+				--error: #ef4444;
+				--text: #b8c8d8;
+				--text-dim: #4a5a6a;
+				--text-bright: #e2ecf5;
+				--green: #22d3a0;
+				--mono: "JetBrains Mono", "Fira Code", monospace;
+			}
+
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			body {
+				background: var(--bg);
+				color: var(--text);
+				font-family: var(--mono);
+				font-size: 12.5px;
+				height: 100vh;
+				display: flex;
+				flex-direction: column;
+				overflow: hidden;
+			}
+
+			/* ── TOPBAR ─────────────────────────────────── */
+			#topbar {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 9px 20px;
+				border-bottom: 1px solid var(--border);
+				background: var(--surface);
+				flex-shrink: 0;
+				gap: 12px;
+			}
+
+			.logo {
+				font-family: "Space Mono", monospace;
+				font-size: 14px;
+				color: var(--accent);
+				letter-spacing: 0.04em;
+				white-space: nowrap;
+			}
+			.logo em {
+				color: var(--text-dim);
+				font-style: normal;
+			}
+
+			.topbar-right {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+
+			select.net-select {
+				background: var(--surface2);
+				border: 1px solid var(--border2);
+				color: var(--text);
+				font-family: var(--mono);
+				font-size: 11px;
+				padding: 5px 10px;
+				outline: none;
+				cursor: pointer;
+			}
+
+			#wallet-btn {
+				background: transparent;
+				border: 1px solid var(--accent);
+				color: var(--accent);
+				font-family: var(--mono);
+				font-size: 11px;
+				padding: 5px 14px;
+				cursor: pointer;
+				transition: all 0.15s;
+				letter-spacing: 0.04em;
+				white-space: nowrap;
+			}
+			#wallet-btn:hover {
+				background: var(--accent);
+				color: var(--bg);
+			}
+			#wallet-btn.connected {
+				border-color: var(--green);
+				color: var(--green);
+			}
+
+			/* ── MAIN ───────────────────────────────────── */
+			#main {
+				display: flex;
+				flex: 1;
+				overflow: hidden;
+			}
+
+			/* ── LEFT PANEL ─────────────────────────────── */
+			#left {
+				width: 300px;
+				flex-shrink: 0;
+				border-right: 1px solid var(--border);
+				display: flex;
+				flex-direction: column;
+				background: var(--surface);
+			}
+
+			.panel-hdr {
+				padding: 9px 14px;
+				font-size: 9.5px;
+				letter-spacing: 0.14em;
+				text-transform: uppercase;
+				color: var(--text-dim);
+				border-bottom: 1px solid var(--border);
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				flex-shrink: 0;
+			}
+
+			#idl-area {
+				flex: 1;
+				background: transparent;
+				border: none;
+				color: var(--text);
+				font-family: var(--mono);
+				font-size: 10.5px;
+				padding: 12px 14px;
+				resize: none;
+				outline: none;
+				line-height: 1.65;
+			}
+			#idl-area::placeholder {
+				color: var(--text-dim);
+			}
+
+			.idl-btns {
+				padding: 9px 14px;
+				border-top: 1px solid var(--border);
+				display: flex;
+				gap: 7px;
+				flex-shrink: 0;
+			}
+
+			.btn {
+				flex: 1;
+				background: transparent;
+				border: 1px solid var(--border2);
+				color: var(--text);
+				font-family: var(--mono);
+				font-size: 11px;
+				padding: 6px 10px;
+				cursor: pointer;
+				transition: all 0.12s;
+				letter-spacing: 0.02em;
+			}
+			.btn:hover {
+				border-color: var(--text-dim);
+				color: var(--text-bright);
+			}
+			.btn.prim {
+				border-color: var(--accent2);
+				color: var(--accent2);
+			}
+			.btn.prim:hover {
+				background: var(--accent2);
+				color: #fff;
+			}
+
+			#file-inp {
+				display: none;
+			}
+
+			/* ── RIGHT PANEL ────────────────────────────── */
+			#right {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				overflow: hidden;
+			}
+
+			#prog-bar {
+				padding: 8px 16px;
+				border-bottom: 1px solid var(--border);
+				display: none;
+				align-items: center;
+				gap: 14px;
+				background: var(--surface);
+				flex-shrink: 0;
+			}
+			.prog-label {
+				font-size: 9.5px;
+				color: var(--text-dim);
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				white-space: nowrap;
+			}
+			.prog-id {
+				color: var(--accent);
+				font-size: 11.5px;
+				flex: 1;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				cursor: pointer;
+			}
+			.prog-id:hover {
+				text-decoration: underline;
+			}
+			.prog-name {
+				color: var(--text-dim);
+				font-size: 10.5px;
+				white-space: nowrap;
+			}
+
+			#ix-container {
+				flex: 1;
+				overflow-y: auto;
+				padding: 14px 16px;
+			}
+
+			/* scrollbar */
+			::-webkit-scrollbar {
+				width: 3px;
+			}
+			::-webkit-scrollbar-track {
+				background: transparent;
+			}
+			::-webkit-scrollbar-thumb {
+				background: var(--border2);
+				border-radius: 2px;
+			}
+
+			/* ── EMPTY STATE ────────────────────────────── */
+			#empty {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				height: 100%;
+				gap: 8px;
+				color: var(--text-dim);
+				pointer-events: none;
+			}
+			#empty .glyph {
+				font-size: 48px;
+				margin-bottom: 6px;
+				opacity: 0.25;
+			}
+			#empty .hint {
+				font-size: 12px;
+			}
+			#empty .sub {
+				font-size: 10.5px;
+				color: var(--text-dim);
+				opacity: 0.6;
+			}
+
+			/* ── INSTRUCTION CARDS ──────────────────────── */
+			#ix-list {
+				display: none;
+			}
+
+			.ix-card {
+				border: 1px solid var(--border);
+				margin-bottom: 7px;
+				background: var(--surface);
+			}
+
+			.ix-hdr {
+				display: flex;
+				align-items: center;
+				padding: 9px 13px;
+				cursor: pointer;
+				user-select: none;
+				transition: background 0.12s;
+				gap: 10px;
+			}
+			.ix-hdr:hover {
+				background: var(--surface2);
+			}
+
+			.ix-fn {
+				color: var(--text-dim);
+				font-size: 11px;
+				flex-shrink: 0;
+			}
+			.ix-name {
+				color: var(--accent2);
+				font-size: 12.5px;
+				flex: 1;
+			}
+			.ix-badge {
+				font-size: 10px;
+				color: var(--text-dim);
+				white-space: nowrap;
+			}
+			.ix-chevron {
+				color: var(--text-dim);
+				font-size: 9px;
+				transition: transform 0.18s;
+				flex-shrink: 0;
+			}
+			.ix-card.open .ix-chevron {
+				transform: rotate(90deg);
+			}
+
+			.ix-body {
+				display: none;
+				padding: 13px 14px 14px;
+				border-top: 1px solid var(--border);
+			}
+			.ix-card.open .ix-body {
+				display: block;
+			}
+
+			/* ── FORM ELEMENTS ──────────────────────────── */
+			.sec-label {
+				font-size: 9px;
+				letter-spacing: 0.13em;
+				text-transform: uppercase;
+				color: var(--text-dim);
+				margin: 13px 0 7px;
+				padding-bottom: 5px;
+				border-bottom: 1px solid var(--border);
+			}
+			.sec-label:first-child {
+				margin-top: 0;
+			}
+
+			.field-row,
+			.acc-row {
+				display: flex;
+				align-items: center;
+				margin-bottom: 5px;
+				gap: 7px;
+			}
+
+			.field-name,
+			.acc-name {
+				width: 130px;
+				flex-shrink: 0;
+				color: var(--text);
+				font-size: 11px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.field-type {
+				width: 65px;
+				flex-shrink: 0;
+				color: var(--warn);
+				font-size: 10px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.acc-flags {
+				display: flex;
+				gap: 3px;
+				width: 65px;
+				flex-shrink: 0;
+			}
+			.flag {
+				font-size: 8.5px;
+				padding: 1px 5px;
+				border: 1px solid;
+				white-space: nowrap;
+			}
+			.flag.w {
+				color: var(--warn);
+				border-color: var(--warn);
+				opacity: 0.9;
+			}
+			.flag.s {
+				color: var(--accent);
+				border-color: var(--accent);
+				opacity: 0.9;
+			}
+
+			.fi {
+				flex: 1;
+				background: var(--bg);
+				border: 1px solid var(--border2);
+				color: var(--text);
+				font-family: var(--mono);
+				font-size: 11px;
+				padding: 4px 8px;
+				outline: none;
+				transition: border-color 0.12s;
+				min-width: 0;
+			}
+			.fi:focus {
+				border-color: var(--accent2);
+			}
+			.fi::placeholder {
+				color: var(--text-dim);
+			}
+			.fi.auto {
+				color: var(--text-dim);
+				font-style: italic;
+			}
+
+			/* call row */
+			.call-row {
+				margin-top: 14px;
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+
+			.call-btn {
+				background: var(--accent2);
+				border: none;
+				color: #fff;
+				font-family: var(--mono);
+				font-size: 11.5px;
+				padding: 7px 22px;
+				cursor: pointer;
+				transition: opacity 0.12s;
+				letter-spacing: 0.04em;
+				flex-shrink: 0;
+			}
+			.call-btn:hover {
+				opacity: 0.82;
+			}
+			.call-btn:disabled {
+				opacity: 0.35;
+				cursor: not-allowed;
+			}
+			.call-btn.loading {
+				opacity: 0.7;
+			}
+
+			.tx-res {
+				flex: 1;
+				font-size: 10.5px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			.tx-res.ok {
+				color: var(--green);
+				cursor: pointer;
+			}
+			.tx-res.ok:hover {
+				text-decoration: underline;
+			}
+			.tx-res.err {
+				color: var(--error);
+			}
+
+			/* fetch section */
+			.fetch-row {
+				display: flex;
+				gap: 7px;
+				margin-bottom: 6px;
+			}
+			.fetch-res {
+				background: var(--bg);
+				border: 1px solid var(--border2);
+				padding: 9px 11px;
+				font-size: 10.5px;
+				line-height: 1.7;
+				color: var(--text);
+				white-space: pre-wrap;
+				max-height: 180px;
+				overflow-y: auto;
+				margin-top: 6px;
+				display: none;
+			}
+
+			/* ── CONSOLE ────────────────────────────────── */
+			#console {
+				height: 130px;
+				border-top: 1px solid var(--border);
+				background: var(--bg);
+				display: flex;
+				flex-direction: column;
+				flex-shrink: 0;
+			}
+			#con-log {
+				flex: 1;
+				overflow-y: auto;
+				padding: 6px 14px;
+				font-size: 10.5px;
+				line-height: 1.85;
+			}
+			.log-line {
+				display: flex;
+				gap: 10px;
+			}
+			.log-t {
+				color: var(--text-dim);
+				flex-shrink: 0;
+				font-size: 10px;
+			}
+			.log-ok {
+				color: var(--green);
+			}
+			.log-err {
+				color: var(--error);
+			}
+			.log-info {
+				color: var(--text);
+			}
+			.log-warn {
+				color: var(--warn);
+			}
+
+			/* divider between ix cards and fetch section */
+			.fetch-sep {
+				border: none;
+				border-top: 1px dashed var(--border2);
+				margin: 14px 0;
+			}
+		</style>
+	</head>
+	<body>
+		<!-- TOPBAR -->
+		<div id="topbar">
+			<div class="logo">anchor<em>/</em>caller</div>
+			<div class="topbar-right">
+				<select class="net-select" id="net">
+					<option value="https://api.devnet.solana.com">devnet</option>
+					<option value="https://api.mainnet-beta.solana.com">
+						mainnet-beta
+					</option>
+					<option value="https://api.testnet.solana.com">testnet</option>
+					<option value="http://localhost:8899">localhost:8899</option>
+				</select>
+				<button id="wallet-btn" onclick="connectWallet()">
+					connect wallet
+				</button>
+			</div>
+		</div>
+
+		<!-- MAIN -->
+		<div id="main">
+			<!-- LEFT: IDL INPUT -->
+			<div id="left">
+				<div class="panel-hdr">
+					<span>IDL</span>
+					<span id="idl-stat" style="color: var(--text-dim)">no IDL</span>
+				</div>
+				<textarea
+					id="idl-area"
+					placeholder="Paste IDL JSON...&#10;&#10;Supports Anchor 1.0&#10;(address, writable, signer)&#10;and 0.30&#10;(isMut, isSigner)"></textarea>
+				<div class="idl-btns">
+					<input
+						type="file"
+						id="file-inp"
+						accept=".json"
+						onchange="loadFile(event)" />
+					<button
+						class="btn"
+						onclick="document.getElementById('file-inp').click()">
+						load file
+					</button>
+					<button class="btn prim" onclick="parseIDL()">parse →</button>
+				</div>
+			</div>
+
+			<!-- RIGHT: INSTRUCTIONS -->
+			<div id="right">
+				<div id="prog-bar">
+					<span class="prog-label">program</span>
+					<span
+						class="prog-id"
+						id="prog-id"
+						title="click to open in explorer"
+						onclick="openExplorer()"
+						>—</span
+					>
+					<span class="prog-name" id="prog-name"></span>
+				</div>
+
+				<div id="ix-container">
+					<div id="empty">
+						<div class="glyph">⬡</div>
+						<div class="hint">load an IDL to start</div>
+						<div class="sub">supports Anchor 1.0 and 0.30 IDL formats</div>
+					</div>
+					<div id="ix-list"></div>
+				</div>
+
+				<!-- CONSOLE -->
+				<div id="console">
+					<div class="panel-hdr">
+						<span>console</span>
+						<span
+							style="cursor: pointer; color: var(--text-dim)"
+							onclick="document.getElementById('con-log').innerHTML=''"
+							>clear</span
+						>
+					</div>
+					<div id="con-log"></div>
+				</div>
+			</div>
+		</div>
+
+		<script type="module">
+			import {
+				Connection,
+				PublicKey,
+				Transaction,
+				TransactionInstruction,
+			} from "https://esm.sh/@solana/web3.js@1.91.8";
+
+			// ── STATE ──────────────────────────────────────────────────────────────
+			let IDL = null;
+			let wallet = null;
+
+			// ── LOGGING ────────────────────────────────────────────────────────────
+			function log(msg, type = "info") {
+				const el = document.getElementById("con-log");
+				const t = new Date().toTimeString().slice(0, 8);
+				const d = document.createElement("div");
+				d.className = "log-line";
+				d.innerHTML = `<span class="log-t">${t}</span><span class="log-${type}">${escHtml(
+					msg
+				)}</span>`;
+				el.appendChild(d);
+				el.scrollTop = el.scrollHeight;
+			}
+
+			function escHtml(s) {
+				return String(s)
+					.replace(/&/g, "&amp;")
+					.replace(/</g, "&lt;")
+					.replace(/>/g, "&gt;");
+			}
+
+			// ── WALLET ─────────────────────────────────────────────────────────────
+			window.addEventListener("load", () => {
+				if (window.solana) {
+					console.log("¡Billetera detectada!", window.solana);
+					window.connectWallet = async () => {
+						const btn = document.getElementById("wallet-btn");
+						console.log(window.phantom);
+						if (!window.phantom?.solana) {
+							log("Phantom not found — install at phantom.app", "err");
+							return;
+						}
+						try {
+							await window.phantom?.solana.connect();
+							wallet = window.phantom?.solana;
+							const pk = wallet.publicKey.toString();
+							btn.textContent = pk.slice(0, 4) + "…" + pk.slice(-4);
+							btn.classList.add("connected");
+							log(`wallet connected: ${pk}`, "ok");
+						} catch (e) {
+							log(`wallet: ${e.message}`, "err");
+						}
+					};
+				} else {
+					console.log("No se encontró el objeto Solana.");
+				}
+			});
+
+			// ── NETWORK ────────────────────────────────────────────────────────────
+			function conn() {
+				return new Connection(
+					document.getElementById("net").value,
+					"confirmed"
+				);
+			}
+
+			// ── EXPLORER ──────────────────────────────────────────────────────────
+			window.openExplorer = () => {
+				const pid = IDL?.address || IDL?.metadata?.address;
+				if (!pid) return;
+				const net = document.getElementById("net").value;
+				const cluster = net.includes("devnet")
+					? "?cluster=devnet"
+					: net.includes("testnet")
+					? "?cluster=testnet"
+					: net.includes("localhost")
+					? "?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899"
+					: "";
+				window.open(
+					`https://explorer.solana.com/address/${pid}${cluster}`,
+					"_blank"
+				);
+			};
+
+			function explorerTx(sig) {
+				const net = document.getElementById("net").value;
+				const cluster = net.includes("devnet")
+					? "?cluster=devnet"
+					: net.includes("testnet")
+					? "?cluster=testnet"
+					: net.includes("localhost")
+					? "?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899"
+					: "";
+				return `https://explorer.solana.com/tx/${sig}${cluster}`;
+			}
+
+			// ── FILE LOAD ──────────────────────────────────────────────────────────
+			window.loadFile = (e) => {
+				const f = e.target.files[0];
+				if (!f) return;
+				const r = new FileReader();
+				r.onload = (ev) => {
+					document.getElementById("idl-area").value = ev.target.result;
+					log(`loaded: ${f.name}`, "info");
+					parseIDL();
+				};
+				r.readAsText(f);
+			};
+
+			// ── PARSE IDL ─────────────────────────────────────────────────────────
+			window.parseIDL = () => {
+				const raw = document.getElementById("idl-area").value.trim();
+				if (!raw) {
+					log("paste an IDL first", "warn");
+					return;
+				}
+				try {
+					IDL = JSON.parse(raw);
+					render(IDL);
+					const n = IDL.name || IDL.metadata?.name || "unknown";
+					const c = IDL.instructions?.length ?? 0;
+					log(`parsed "${n}" — ${c} instructions`, "ok");
+					document.getElementById("idl-stat").textContent = `${c} ix`;
+					document.getElementById("idl-stat").style.color = "var(--green)";
+				} catch (e) {
+					log(`parse error: ${e.message}`, "err");
+				}
+			};
+
+			// ── RENDER ─────────────────────────────────────────────────────────────
+			function render(idl) {
+				const pid = idl.address || idl.metadata?.address;
+				const name = idl.name || idl.metadata?.name || "";
+
+				const bar = document.getElementById("prog-bar");
+				document.getElementById("prog-id").textContent = pid || "(no address)";
+				document.getElementById("prog-id").title = pid
+					? "click to open in explorer"
+					: "";
+				document.getElementById("prog-name").textContent = name;
+				bar.style.display = "flex";
+
+				document.getElementById("empty").style.display = "none";
+
+				const list = document.getElementById("ix-list");
+				list.style.display = "block";
+				list.innerHTML = "";
+
+				(idl.instructions || []).forEach((ix, i) =>
+					list.appendChild(ixCard(ix, idl, i))
+				);
+
+				if (idl.accounts?.length) {
+					const sep = document.createElement("hr");
+					sep.className = "fetch-sep";
+					list.appendChild(sep);
+					list.appendChild(fetchSection(idl));
+				}
+			}
+
+			// ── IX CARD ────────────────────────────────────────────────────────────
+			function ixCard(ix, idl, idx) {
+				const ac = ix.accounts?.length ?? 0;
+				const ar = ix.args?.length ?? 0;
+				const card = el("div", { className: "ix-card", id: `c${idx}` });
+
+				card.innerHTML = `
+    <div class="ix-hdr" onclick="toggle(${idx})">
+      <span class="ix-fn">fn </span>
+      <span class="ix-name">${ix.name}</span>
+      <span class="ix-badge">${ar} arg${ar !== 1 ? "s" : ""} · ${ac} acct${
+					ac !== 1 ? "s" : ""
+				}</span>
+      <span class="ix-chevron">▶</span>
+    </div>
+    <div class="ix-body">
+      ${
+				ac
+					? `<div class="sec-label">accounts</div>${acctFields(
+							ix.accounts,
+							idx
+					  )}`
+					: ""
+			}
+      ${
+				ar
+					? `<div class="sec-label">arguments</div>${argFields(
+							ix.args,
+							idl,
+							idx
+					  )}`
+					: ""
+			}
+      <div class="call-row">
+        <button class="call-btn" id="btn${idx}" onclick="call('${
+					ix.name
+				}',${idx})">call</button>
+        <div class="tx-res" id="res${idx}"></div>
+      </div>
+    </div>
+  `;
+				return card;
+			}
+
+			function acctFields(accounts, idx) {
+				return accounts
+					.map((a, i) => {
+						const w = a.writable || a.isMut;
+						const s = a.signer || a.isSigner;
+						const autoW =
+							!s &&
+							(a.name.toLowerCase().includes("system") ||
+								a.name.toLowerCase().includes("tokenprogram") ||
+								a.name.toLowerCase().includes("associatedtoken") ||
+								a.name.toLowerCase().includes("rent") ||
+								a.name.toLowerCase().includes("clock"));
+						const autoS = s && !w;
+						return `
+      <div class="acc-row">
+        <span class="acc-name" title="${a.name}">${a.name}</span>
+        <span class="acc-flags">
+          ${w ? '<span class="flag w">mut</span>' : ""}
+          ${s ? '<span class="flag s">sign</span>' : ""}
+        </span>
+        <input class="fi${autoS ? " auto" : ""}"
+          id="a${idx}_${i}"
+          placeholder="${
+						autoS ? "wallet (auto)" : autoW ? "sysvar (auto)" : "PublicKey..."
+					}"
+          ${autoS || autoW ? `data-auto="${autoS ? "wallet" : a.name}"` : ""}
+        />
+      </div>`;
+					})
+					.join("");
+			}
+
+			function argFields(args, idl, idx) {
+				return args
+					.map(
+						(a, i) => `
+    <div class="field-row">
+      <span class="field-name" title="${a.name}">${a.name}</span>
+      <span class="field-type">${fmtType(a.type)}</span>
+      <input class="fi" id="g${idx}_${i}"
+        placeholder="${placeholder(a.type)}"
+      />
+    </div>`
+					)
+					.join("");
+			}
+
+			function fetchSection(idl) {
+				const wrap = el("div", { className: "ix-card", id: "fetch-card" });
+				wrap.innerHTML = `
+    <div class="ix-hdr" onclick="this.parentElement.classList.toggle('open')">
+      <span class="ix-fn" style="color:var(--text-dim)">acct </span>
+      <span class="ix-name" style="color:var(--accent)">fetch accounts</span>
+      <span class="ix-badge">${idl.accounts.length} type${
+					idl.accounts.length !== 1 ? "s" : ""
+				}</span>
+      <span class="ix-chevron">▶</span>
+    </div>
+    <div class="ix-body">
+      ${idl.accounts
+				.map(
+					(a, i) => `
+        <div class="sec-label">${a.name}</div>
+        <div class="fetch-row">
+          <input class="fi" id="fi${i}" placeholder="PublicKey..." style="flex:1">
+          <button class="btn prim" style="flex:none;white-space:nowrap"
+            onclick="fetchAcct('${a.name}','fi${i}','fr${i}')">fetch</button>
+        </div>
+        <pre class="fetch-res" id="fr${i}"></pre>
+      `
+				)
+				.join("")}
+    </div>`;
+				return wrap;
+			}
+
+			// ── HELPERS ────────────────────────────────────────────────────────────
+			function fmtType(t) {
+				if (typeof t === "string") return t;
+				if (t.vec) return `vec<${fmtType(t.vec)}>`;
+				if (t.option) return `opt<${fmtType(t.option)}>`;
+				if (t.defined) return t.defined?.name || t.defined;
+				if (t.array) return `[${fmtType(t.array[0])};${t.array[1]}]`;
+				return "?";
+			}
+
+			function placeholder(t) {
+				if (typeof t === "string") {
+					if (/^[ui](8|16|32|64|128)$/.test(t)) return "0";
+					if (t === "bool") return "true / false";
+					if (t === "string") return '"text"';
+					if (t === "pubkey" || t === "publicKey") return "Base58 pubkey";
+					if (t === "bytes") return "hex or [1,2,3]";
+					return "...";
+				}
+				if (t.vec) return "[ ... ]";
+				if (t.option) return "value or null";
+				if (t.defined) return "{ ... }";
+				if (t.array) return `[ ${t.array[1]} items ]`;
+				return "...";
+			}
+
+			function el(tag, props = {}) {
+				const e = document.createElement(tag);
+				Object.assign(e, props);
+				return e;
+			}
+
+			// ── TOGGLE CARD ────────────────────────────────────────────────────────
+			window.toggle = (idx) =>
+				document.getElementById(`c${idx}`).classList.toggle("open");
+
+			// ── BORSH WRITER ───────────────────────────────────────────────────────
+			class Borsh {
+				constructor() {
+					this.b = [];
+				}
+
+				u8(v) {
+					this.b.push(Number(v) & 0xff);
+				}
+				u16(v) {
+					const n = Number(v);
+					this.b.push(n & 0xff, (n >> 8) & 0xff);
+				}
+				u32(v) {
+					const n = Number(v);
+					this.b.push(
+						n & 0xff,
+						(n >> 8) & 0xff,
+						(n >> 16) & 0xff,
+						(n >> 24) & 0xff
+					);
+				}
+				u64(v) {
+					this._bn(BigInt(v), 8);
+				}
+				u128(v) {
+					this._bn(BigInt(v), 16);
+				}
+				i8(v) {
+					this.u8(Number(v) < 0 ? Number(v) + 256 : Number(v));
+				}
+				i16(v) {
+					const n = Number(v);
+					this.u16(n < 0 ? n + 65536 : n);
+				}
+				i32(v) {
+					const n = Number(v);
+					this.u32(n < 0 ? n + 4294967296 : n);
+				}
+				i64(v) {
+					this._bns(BigInt(v), 8);
+				}
+				i128(v) {
+					this._bns(BigInt(v), 16);
+				}
+
+				_bn(v, bytes) {
+					let x = BigInt(v);
+					for (let i = 0; i < bytes; i++) {
+						this.b.push(Number(x & 0xffn));
+						x >>= 8n;
+					}
+				}
+				_bns(v, bytes) {
+					let x = BigInt(v);
+					if (x < 0n) x = (1n << BigInt(bytes * 8)) + x;
+					this._bn(x, bytes);
+				}
+
+				bool(v) {
+					this.u8(v ? 1 : 0);
+				}
+				string(s) {
+					const e = new TextEncoder().encode(s);
+					this.u32(e.length);
+					e.forEach((b) => this.b.push(b));
+				}
+				pubkey(pk) {
+					new PublicKey(pk).toBytes().forEach((b) => this.b.push(b));
+				}
+				bytes(d) {
+					this.u32(d.length);
+					d.forEach((b) => this.b.push(b));
+				}
+				raw() {
+					return new Uint8Array(this.b);
+				}
+			}
+
+			function encArg(w, type, raw, idl) {
+				if (typeof type === "string") {
+					const v = String(raw ?? "").trim();
+					switch (type) {
+						case "u8":
+							w.u8(v);
+							break;
+						case "u16":
+							w.u16(v);
+							break;
+						case "u32":
+							w.u32(v);
+							break;
+						case "u64":
+							w.u64(v);
+							break;
+						case "u128":
+							w.u128(v);
+							break;
+						case "i8":
+							w.i8(v);
+							break;
+						case "i16":
+							w.i16(v);
+							break;
+						case "i32":
+							w.i32(v);
+							break;
+						case "i64":
+							w.i64(v);
+							break;
+						case "i128":
+							w.i128(v);
+							break;
+						case "bool":
+							w.bool(v === "true" || v === "1");
+							break;
+						case "string":
+							w.string(v.replace(/^"|"$/g, ""));
+							break;
+						case "pubkey":
+						case "publicKey":
+							w.pubkey(v);
+							break;
+						case "bytes": {
+							let d;
+							try {
+								d = JSON.parse(v);
+							} catch {
+								d = [...Buffer.from(v, "hex")];
+							}
+							w.bytes(d);
+							break;
+						}
+						default:
+							throw new Error(`unsupported type: ${type}`);
+					}
+					return;
+				}
+				if (type.vec) {
+					const arr = JSON.parse(raw);
+					w.u32(arr.length);
+					arr.forEach((item) => encArg(w, type.vec, JSON.stringify(item), idl));
+					return;
+				}
+				if (type.option) {
+					const v = String(raw ?? "").trim();
+					if (v === "" || v === "null") {
+						w.u8(0);
+						return;
+					}
+					w.u8(1);
+					encArg(w, type.option, raw, idl);
+					return;
+				}
+				if (type.array) {
+					const arr = JSON.parse(raw);
+					arr.forEach((item) =>
+						encArg(w, type.array[0], JSON.stringify(item), idl)
+					);
+					return;
+				}
+				if (type.defined) {
+					const tname = type.defined?.name || type.defined;
+					const tdef = idl.types?.find((t) => t.name === tname);
+					if (!tdef) throw new Error(`unknown type: ${tname}`);
+					const obj = JSON.parse(raw);
+					if (tdef.type?.kind === "struct") {
+						tdef.type.fields.forEach((f) =>
+							encArg(w, f.type, JSON.stringify(obj[f.name]), idl)
+						);
+					} else if (tdef.type?.kind === "enum") {
+						const varName = typeof obj === "string" ? obj : Object.keys(obj)[0];
+						const vi = tdef.type.variants.findIndex((v) => v.name === varName);
+						if (vi < 0) throw new Error(`unknown variant: ${varName}`);
+						w.u8(vi);
+					}
+					return;
+				}
+				throw new Error(`cannot encode type: ${JSON.stringify(type)}`);
+			}
+
+			// ── DISCRIMINANT ───────────────────────────────────────────────────────
+			async function disc(name) {
+				const data = new TextEncoder().encode(`global:${name}`);
+				const hash = await crypto.subtle.digest("SHA-256", data);
+				return new Uint8Array(hash).slice(0, 8);
+			}
+
+			// ── SYSVAR MAP ─────────────────────────────────────────────────────────
+			const SYSVARS = {
+				systemprogram: "11111111111111111111111111111111",
+				system: "11111111111111111111111111111111",
+				tokenprogram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+				token: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+				token2022: "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+				associatedtokenprogram: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJe1bj",
+				associatedtoken: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJe1bj",
+				ata: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJe1bj",
+				rent: "SysvarRent111111111111111111111111111111111",
+				clock: "SysvarC1ock11111111111111111111111111111111",
+				stakeconfiguration: "StakeConfig11111111111111111111111111111111",
+				recentblockhashes: "SysvarRecentB1ockHashes11111111111111111111",
+			};
+
+			function autoResolve(name) {
+				const key = name.toLowerCase().replace(/[^a-z0-9]/g, "");
+				return SYSVARS[key] || null;
+			}
+
+			// ── CALL INSTRUCTION ───────────────────────────────────────────────────
+			window.call = async (ixName, idx) => {
+				if (!wallet?.publicKey) {
+					log("connect wallet first", "warn");
+					return;
+				}
+				if (!IDL) {
+					log("no IDL loaded", "err");
+					return;
+				}
+
+				const pid = IDL.address || IDL.metadata?.address;
+				if (!pid) {
+					log("no program address in IDL", "err");
+					return;
+				}
+
+				const ix = IDL.instructions.find((i) => i.name === ixName);
+				if (!ix) {
+					log(`instruction "${ixName}" not found`, "err");
+					return;
+				}
+
+				const btn = document.getElementById(`btn${idx}`);
+				const resEl = document.getElementById(`res${idx}`);
+				btn.disabled = true;
+				btn.className = "call-btn loading";
+				btn.textContent = "…";
+				resEl.className = "tx-res";
+				resEl.textContent = "";
+
+				try {
+					// 1. discriminant
+					const d = await disc(ixName);
+
+					// 2. encode args
+					const w = new Borsh();
+					const args = ix.args || [];
+					for (let i = 0; i < args.length; i++) {
+						const raw = document.getElementById(`g${idx}_${i}`)?.value;
+						if (raw === undefined || raw === "")
+							throw new Error(`missing arg: ${args[i].name}`);
+						encArg(w, args[i].type, raw, IDL);
+					}
+
+					const data = new Uint8Array([...d, ...w.raw()]);
+
+					// 3. build keys
+					const accts = ix.accounts || [];
+					const keys = [];
+					for (let i = 0; i < accts.length; i++) {
+						const a = accts[i];
+						let pkStr = document.getElementById(`a${idx}_${i}`)?.value?.trim();
+
+						if (!pkStr) {
+							const auto = autoResolve(a.name);
+							if (auto) {
+								pkStr = auto;
+							} else if (a.signer || a.isSigner) {
+								pkStr = wallet.publicKey.toString();
+							} else {
+								throw new Error(`missing account: ${a.name}`);
+							}
+						}
+
+						keys.push({
+							pubkey: new PublicKey(pkStr),
+							isWritable: !!(a.writable || a.isMut),
+							isSigner: !!(a.signer || a.isSigner),
+						});
+					}
+
+					// 4. build + send tx
+					const instruction = new TransactionInstruction({
+						programId: new PublicKey(pid),
+						keys,
+						data,
+					});
+
+					const c = conn();
+					const { blockhash, lastValidBlockHeight } =
+						await c.getLatestBlockhash();
+					const tx = new Transaction({
+						blockhash,
+						lastValidBlockHeight,
+						feePayer: wallet.publicKey,
+					});
+					tx.add(instruction);
+
+					const signed = await wallet.signTransaction(tx);
+					const sig = await c.sendRawTransaction(signed.serialize());
+					await c.confirmTransaction({
+						signature: sig,
+						blockhash,
+						lastValidBlockHeight,
+					});
+
+					log(`✓ ${ixName} → ${sig}`, "ok");
+					const short = sig.slice(0, 18) + "…";
+					resEl.textContent = `✓ ${short}`;
+					resEl.className = "tx-res ok";
+					resEl.title = sig;
+					resEl.onclick = () => window.open(explorerTx(sig), "_blank");
+				} catch (e) {
+					log(`✗ ${ixName}: ${e.message}`, "err");
+					resEl.textContent = `✗ ${e.message.slice(0, 80)}`;
+					resEl.className = "tx-res err";
+					resEl.title = e.message;
+				} finally {
+					btn.disabled = false;
+					btn.className = "call-btn";
+					btn.textContent = "call";
+				}
+			};
+
+			// ── FETCH ACCOUNT ─────────────────────────────────────────────────────
+			window.fetchAcct = async (typeName, inputId, resultId) => {
+				const pk = document.getElementById(inputId)?.value?.trim();
+				if (!pk) {
+					log("enter a PublicKey", "warn");
+					return;
+				}
+				const out = document.getElementById(resultId);
+				try {
+					const info = await conn().getAccountInfo(new PublicKey(pk));
+					if (!info) {
+						out.textContent = "account not found";
+						out.style.display = "block";
+						return;
+					}
+					const d = info.data;
+					out.textContent = JSON.stringify(
+						{
+							type: typeName,
+							owner: info.owner.toString(),
+							lamports: info.lamports,
+							executable: info.executable,
+							dataLen: d.length,
+							discriminator: Array.from(d.slice(0, 8)),
+							payload_hex:
+								Buffer.from(d.slice(8, 72)).toString("hex") +
+								(d.length > 72 ? "…" : ""),
+						},
+						null,
+						2
+					);
+					out.style.display = "block";
+					log(`fetched ${typeName}: ${pk}`, "ok");
+				} catch (e) {
+					out.textContent = `error: ${e.message}`;
+					out.style.display = "block";
+					log(`fetch error: ${e.message}`, "err");
+				}
+			};
+
+			// ── INIT ──────────────────────────────────────────────────────────────
+			log("anchor/caller ready — load an IDL to start", "info");
+			log(
+				"supports Anchor 1.0 (writable/signer) and 0.30 (isMut/isSigner)",
+				"info"
+			);
+		</script>
+	</body>
+</html>

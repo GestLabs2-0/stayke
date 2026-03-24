@@ -9,8 +9,12 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  Star as StarIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useBooking } from "@/src/Hooks/solana/useBooking";
+import { handleApiError } from "@/src/helpers/apiError";
+
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type BookingStatus = "active" | "completed" | "cancelled";
@@ -172,47 +176,121 @@ export default function BookingsPage() {
 // ── BookingCard ───────────────────────────────────────────────────────────────
 const BookingCard = ({ booking }: { booking: Booking }) => {
   const { label, color, icon: Icon } = STATUS_CONFIG[booking.status];
+  const { user } = useAuth();
+  const { 
+    activateBooking, 
+    completeStay, 
+    closeBooking, 
+    loading: bookingLoading 
+  } = useBooking();
+
+  const handleActivate = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user?.pdaKey) return;
+    try {
+      // Mocked data for demo
+      const propertyPda = "property_pda_mock";
+      const usdcMint = "usdc_mint_mock";
+      const clientTokenAccount = "client_ata_mock";
+      
+      await activateBooking(user.pdaKey, propertyPda, booking.id, usdcMint, clientTokenAccount);
+      alert("Booking activated on-chain!");
+    } catch (err) {
+      handleApiError(err, "Activate Booking");
+    }
+  };
+
+  const handleComplete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user?.pdaKey) return;
+    try {
+      const hostProfilePda = "host_pda_mock";
+      const propertyPda = "property_pda_mock";
+      const hostTokenAccount = "host_ata_mock";
+      const usdcMint = "usdc_mint_mock";
+
+      await completeStay(user.pdaKey, hostProfilePda, propertyPda, booking.id, hostTokenAccount, usdcMint);
+      alert("Stay completed and funds released!");
+    } catch (err) {
+      handleApiError(err, "Complete Stay");
+    }
+  };
 
   return (
-    <Link
-      href={`/listing/${booking.listingId}`}
-      className="flex items-center gap-4 rounded-2xl border border-border bg-card px-4 py-4 hover:border-primary/30 transition-colors group"
-    >
-      {/* Imagen */}
-      <div
-        className="h-14 w-14 shrink-0 rounded-xl bg-muted bg-cover bg-center transition-transform group-hover:scale-105"
-        style={{ backgroundImage: `url(${booking.image})` }}
-      />
+    <div className="group relative">
+      <Link
+        href={`/listing/${booking.listingId}`}
+        className="flex items-center gap-4 rounded-2xl border border-border bg-card px-4 py-4 hover:border-primary/30 transition-colors"
+      >
+        {/* Imagen */}
+        <div
+          className="h-14 w-14 shrink-0 rounded-xl bg-muted bg-cover bg-center transition-transform group-hover:scale-105"
+          style={{ backgroundImage: `url(${booking.image})` }}
+        />
 
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-            {booking.title}
-          </p>
-          <span
-            className={`inline-flex items-center gap-1 shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium ${color}`}
-          >
-            <Icon className="h-3 w-3" />
-            {label}
-          </span>
-        </div>
-        <div className="flex items-center gap-1 mt-0.5">
-          <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
-          <p className="text-xs text-muted-foreground truncate">
-            {booking.location}
-          </p>
-        </div>
-        <div className="flex items-center justify-between mt-1.5">
-          <div className="flex items-center gap-1">
-            <CalendarCheck className="h-3 w-3 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">{booking.dates}</p>
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+              {booking.title}
+            </p>
+            <span
+              className={`inline-flex items-center gap-1 shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium ${color}`}
+            >
+              <Icon className="h-3 w-3" />
+              {label}
+            </span>
           </div>
-          <span className="font-display text-sm font-bold text-gradient">
-            ${booking.price} USD
-          </span>
+          <div className="flex items-center gap-1 mt-0.5">
+            <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
+            <p className="text-xs text-muted-foreground truncate">
+              {booking.location}
+            </p>
+          </div>
+          <div className="flex items-center justify-between mt-1.5">
+            <div className="flex items-center gap-1">
+              <CalendarCheck className="h-3 w-3 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">{booking.dates}</p>
+            </div>
+            <span className="font-display text-sm font-bold text-gradient">
+              ${booking.price} USD
+            </span>
+          </div>
+
+          {/* Action Buttons (Visible on hover or based on status) */}
+          <div className="mt-4 flex gap-2 border-t border-border/50 pt-3">
+            {booking.status === "active" && (
+              <>
+                <button 
+                  onClick={handleActivate}
+                  disabled={bookingLoading}
+                  className="flex-1 rounded-lg bg-primary/10 border border-primary/20 py-2 text-[10px] font-bold uppercase tracking-wider text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+                >
+                  Activate (Pay)
+                </button>
+                <button 
+                  onClick={handleComplete}
+                  disabled={bookingLoading}
+                  className="flex-1 rounded-lg bg-emerald-400/10 border border-emerald-400/20 py-2 text-[10px] font-bold uppercase tracking-wider text-emerald-400 hover:bg-emerald-400/20 transition-colors disabled:opacity-50"
+                >
+                  Complete Stay
+                </button>
+              </>
+            )}
+            
+            {booking.status === "completed" && (
+              <button 
+                disabled={bookingLoading}
+                className="flex-1 rounded-lg bg-amber-400/10 border border-amber-400/20 py-2 text-[10px] font-bold uppercase tracking-wider text-amber-400 hover:bg-amber-400/20 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+              >
+                <StarIcon className="h-3 w-3 fill-amber-400" />
+                Rate Experience
+              </button>
+            )}
+          </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 };
+

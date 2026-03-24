@@ -62,8 +62,16 @@ const UserMenu = () => {
         onClick={() => setOpen((v) => !v)}
         className="inline-flex items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium text-foreground hover:border-primary hover:shadow-glow transition-all duration-200"
       >
-        <div className="relative flex h-7 w-7 items-center justify-center rounded-full gradient-solana shrink-0">
-          <User className="h-3.5 w-3.5 text-primary-foreground" />
+        <div className="relative flex h-7 w-7 items-center justify-center rounded-full gradient-solana shrink-0 overflow-hidden">
+          {user?.image ? (
+            <img
+              src={user.image}
+              alt={user.firstName}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <User className="h-3.5 w-3.5 text-primary-foreground" />
+          )}
           <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-card" />
         </div>
         <span className="max-w-20 truncate">{user?.firstName}</span>

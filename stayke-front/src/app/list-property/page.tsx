@@ -7,18 +7,24 @@ import { propertyService } from "@/src/services/propertyService";
 import { Shield, MapPin, DollarSign, Type, AlignLeft, Loader2, Check } from "lucide-react";
 import Link from "next/link";
 import { handleApiError } from "@/src/helpers/apiError";
+import { useProperty } from "@/src/Hooks/solana/useProperty";
+import { fetchUserProfileAccount } from "@/src/client/fetchers";
+import { getPdaProperty } from "@/src/client/pdas";
+
 
 export default function ListPropertyPage() {
   const { user, isRegistered } = useAuth();
   const router = useRouter();
+  const { publishProperty } = useProperty();
   const [submitting, setSubmitting] = useState(false);
+
   const [form, setForm] = useState({
     title: "",
     description: "",
     location: "",
     pricePerNight: 0,
-    pdaKey: `prop-${Math.random().toString(36).slice(2, 9)}`, // Mock PDA key
   });
+
 
   if (!isRegistered || !user?.isHost) {
     return (
@@ -35,13 +41,35 @@ export default function ListPropertyPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user?.pdaKey) {
+      alert("Please initialize your blockchain profile first.");
+      return;
+    }
     setSubmitting(true);
 
     try {
+      // 1. Fetch current profile to get listingCount
+      const profileInfo = await fetchUserProfileAccount(user.pdaKey);
+      const listingId = profileInfo.data.listingCount;
+
+      // 2. Publish on-chain
+      await publishProperty(
+        user.pdaKey,
+        listingId,
+        BigInt(form.pricePerNight)
+      );
+
+      // 3. Derive Property PDA for backend
+      const [propertyPda] = await getPdaProperty(user.pdaKey, listingId);
+      const propertyPdaKey = propertyPda.toString();
+
+      // 4. Register off-chain
       await propertyService.createProperty({
         ...form,
+        pdaKey: propertyPdaKey,
         ownerWallet: user.wallet,
       });
+
       router.push("/profile");
     } catch (error) {
       handleApiError(error, "List Property");
@@ -49,6 +77,7 @@ export default function ListPropertyPage() {
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background pt-24 pb-16">
@@ -131,12 +160,12 @@ export default function ListPropertyPage() {
               </div>
             </div>
 
-            {/* PDA Key (Read only/Generated) */}
             <div>
               <p className="text-xs text-muted-foreground italic">
-                Property Decentralized ID: {form.pdaKey}
+                A unique Property PDA will be derived from your host profile.
               </p>
             </div>
+
           </div>
 
           <div className="mt-8 flex gap-3">

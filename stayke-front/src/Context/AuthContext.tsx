@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         phone: data.phone,
         address: data.address,
         dni: data.dni,
-        profileImage: undefined, // TODO: Implementar subida de imágenes
+        profileImage: data.image,
         isHost: data.isHost,
       });
       setUserState(mapBackendUserToUser(backendUser));
@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;

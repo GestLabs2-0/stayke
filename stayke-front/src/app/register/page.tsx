@@ -15,6 +15,9 @@ import { STEP_COMPONENTS } from "@/src/components/RegisterForms/StepRenderer";
 import { useAuth } from "@/src/Context/AuthContext";
 import { STEPS } from "@/src/constants";
 import { handleApiError } from "@/src/helpers/apiError";
+import { useRegisterUser } from "@/src/Hooks/solana/useRegisterUser";
+import { hashString } from "@/src/helpers/crypto";
+
 
 //Type
 import type { RegisterFormData } from "@/src/types/RegisterFormData";
@@ -27,7 +30,7 @@ const INITIAL_FORM: RegisterFormData = {
   email: "",
   phone: "",
   address: "",
-  image: null,
+  image: "",
   isHost: false,
 };
 
@@ -37,8 +40,9 @@ export const Register = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const { wallet } = useWalletConnection();
-  const { registerUser } = useAuth();
+  const { register: registerOnChain, loading: blockchainLoading } = useRegisterUser();
   const router = useRouter();
+
   const totalSteps = STEPS.length;
 
   const onChange = (field: keyof RegisterFormData, value: any) => {
@@ -55,29 +59,27 @@ export const Register = () => {
   const handleSubmit = async () => {
     setSubmitting(true);
 
-    const payload = {
-      ...form,
-      wallet: wallet?.account?.address?.toString() ?? "",
-      roles: form.isHost ? ["host"] : ["client"],
-    };
-
-    console.log("Submit payload:", payload);
-
     try {
-      // mockRegister guarda el user en AuthContext y devuelve success: true
-      // TODO: cuando tengas backend, mockRegister hace fetch a /api/auth/register
-      const { success } = await registerUser(payload);
+      const dniHash = await hashString(form.dni);
+      
+      const res = await registerOnChain(
+        form.firstName,
+        form.lastName,
+        form.email,
+        form.dni,
+        dniHash
+      );
 
-      if (success) {
-        router.push("/"); // → home con UserMenu ya visible
-      } else {
-        setSubmitting(false);
+      if (res) {
+        router.push("/");
       }
     } catch (error) {
       handleApiError(error, "Register");
+    } finally {
       setSubmitting(false);
     }
   };
+
 
   const renderStep = STEP_COMPONENTS[step];
 

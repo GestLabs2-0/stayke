@@ -8,7 +8,7 @@ export interface RegisterFormData {
   email: string;
   phone: string;
   address: string;
-  image: File | null;
+  image: string;
   isHost: boolean;
 }
 

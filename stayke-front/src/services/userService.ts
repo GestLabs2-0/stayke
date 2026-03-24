@@ -16,7 +16,8 @@ class UserService {
     const res = await apiService.get<{ exists: boolean; user?: BackendUser }>(
       API_CONFIG.ENDPOINTS.USER_BY_WALLET(wallet)
     );
-    return res.data;
+    const data: { exists: boolean; user?: BackendUser } = res.data;
+    return data;
   }
 
   /**
@@ -28,7 +29,8 @@ class UserService {
       API_CONFIG.ENDPOINTS.USERS,
       payload
     );
-    return res.data;
+    const user: BackendUser = res.data;
+    return user;
   }
 
   /**

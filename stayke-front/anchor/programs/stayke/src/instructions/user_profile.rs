@@ -24,6 +24,7 @@ pub struct Deposit<'info> {
     #[account(seeds = [b"config"], bump = config.bump)]
     pub config: Account<'info, PlatformConfig>,
 
+    #[account(mut)]
     pub sender_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(mut, constraint = treasury.key() == config.treasury @ StaykeErrors::InvalidTreasuryAccount)]

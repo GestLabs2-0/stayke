@@ -1,0 +1,2647 @@
+{
+  "address": "GwRWqCBjW87B74SeHx3sH8w4WVGdbwc6tCKoSsUsLGqW",
+  "metadata": {
+    "name": "stayke",
+    "version": "0.1.0",
+    "spec": "0.1.0"
+  },
+  "instructions": [
+    {
+      "name": "accept_reserve",
+      "discriminator": [130, 220, 155, 233, 138, 56, 21, 217],
+      "accounts": [
+        {
+          "name": "client",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "client_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "client_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "client"
+              }
+            ]
+          }
+        },
+        {
+          "name": "property",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [112, 114, 111, 112, 101, 114, 116, 121]
+              },
+              {
+                "kind": "account",
+                "path": "booking.host",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "property.listing_id",
+                "account": "Property"
+              }
+            ]
+          }
+        },
+        {
+          "name": "booking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [98, 111, 111, 107, 105, 110, 103]
+              },
+              {
+                "kind": "account",
+                "path": "booking.property",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.guest",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.check_in",
+                "account": "Booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint",
+          "writable": true
+        },
+        {
+          "name": "client_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "client"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6, 221, 246, 225, 215, 101, 161, 147, 217, 203, 225, 70, 206,
+                  235, 121, 172, 28, 180, 133, 237, 95, 91, 55, 145, 58, 140,
+                  245, 133, 126, 255, 0, 169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
+                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
+                219, 233, 248, 89
+              ]
+            }
+          }
+        },
+        {
+          "name": "escrow_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [101, 115, 99, 114, 111, 119]
+              },
+              {
+                "kind": "account",
+                "path": "booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "add_admin",
+      "discriminator": [177, 236, 33, 205, 124, 152, 55, 186],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "client_reject_reserve",
+      "discriminator": [255, 7, 9, 197, 47, 46, 133, 198],
+      "accounts": [
+        {
+          "name": "client",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "client_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "client_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "client"
+              }
+            ]
+          }
+        },
+        {
+          "name": "booking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [98, 111, 111, 107, 105, 110, 103]
+              },
+              {
+                "kind": "account",
+                "path": "booking.property",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.guest",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.check_in",
+                "account": "Booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        },
+        {
+          "name": "booking_days",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98, 111, 111, 107, 105, 110, 103, 95, 100, 97, 121, 115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "booking.property",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking_days"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_booking",
+      "discriminator": [5, 218, 54, 100, 74, 141, 66, 111],
+      "accounts": [
+        {
+          "name": "client",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "client_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "client_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "client"
+              }
+            ]
+          }
+        },
+        {
+          "name": "host_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "host_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "host_profile.owner",
+                "account": "UserProfile"
+              }
+            ]
+          }
+        },
+        {
+          "name": "property",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [112, 114, 111, 112, 101, 114, 116, 121]
+              },
+              {
+                "kind": "account",
+                "path": "booking.host",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "property.listing_id",
+                "account": "Property"
+              }
+            ]
+          }
+        },
+        {
+          "name": "booking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [98, 111, 111, 107, 105, 110, 103]
+              },
+              {
+                "kind": "account",
+                "path": "booking.property",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.guest",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.check_in",
+                "account": "Booking"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "score",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "close_dispute",
+      "discriminator": [60, 18, 92, 170, 100, 195, 146, 196],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        },
+        {
+          "name": "booking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [98, 111, 111, 107, 105, 110, 103]
+              },
+              {
+                "kind": "account",
+                "path": "booking.property",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.guest",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.check_in",
+                "account": "Booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "dispute",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [100, 105, 115, 112, 117, 116, 101]
+              },
+              {
+                "kind": "account",
+                "path": "booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "host_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "host_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "host_profile.owner",
+                "account": "UserProfile"
+              }
+            ]
+          }
+        },
+        {
+          "name": "guest_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "guest_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "guest_profile.owner",
+                "account": "UserProfile"
+              }
+            ]
+          }
+        },
+        {
+          "name": "property",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [112, 114, 111, 112, 101, 114, 116, 121]
+              },
+              {
+                "kind": "account",
+                "path": "booking.host",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "property.listing_id",
+                "account": "Property"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "complete_stay",
+      "discriminator": [112, 64, 94, 245, 123, 205, 57, 182],
+      "accounts": [
+        {
+          "name": "client",
+          "docs": ["The guest — must be the one who made the booking."],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "client_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "client_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "client"
+              }
+            ]
+          }
+        },
+        {
+          "name": "host_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "host_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "host_profile.owner",
+                "account": "UserProfile"
+              }
+            ]
+          }
+        },
+        {
+          "name": "property",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [112, 114, 111, 112, 101, 114, 116, 121]
+              },
+              {
+                "kind": "account",
+                "path": "booking.host",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "property.listing_id",
+                "account": "Property"
+              }
+            ]
+          }
+        },
+        {
+          "name": "booking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [98, 111, 111, 107, 105, 110, 103]
+              },
+              {
+                "kind": "account",
+                "path": "booking.property",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.guest",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.check_in",
+                "account": "Booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow_token_account",
+          "docs": ["Escrow token account holding the booking payment."],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [101, 115, 99, 114, 111, 119]
+              },
+              {
+                "kind": "account",
+                "path": "booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "host_token_account",
+          "docs": ["Host's USDC token account — receives (total_price - fee)."],
+          "writable": true
+        },
+        {
+          "name": "platform_vault_token_account",
+          "docs": ["Platform vault token account — receives the fee."],
+          "writable": true
+        },
+        {
+          "name": "mint",
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_booking",
+      "discriminator": [19, 223, 181, 90, 124, 206, 73, 169],
+      "accounts": [
+        {
+          "name": "client",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "client_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "client_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "client"
+              }
+            ]
+          }
+        },
+        {
+          "name": "property",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [112, 114, 111, 112, 101, 114, 116, 121]
+              },
+              {
+                "kind": "account",
+                "path": "property_host"
+              },
+              {
+                "kind": "account",
+                "path": "property.listing_id",
+                "account": "Property"
+              }
+            ]
+          }
+        },
+        {
+          "name": "property_host",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "property_host.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "property_host.owner",
+                "account": "UserProfile"
+              }
+            ]
+          }
+        },
+        {
+          "name": "booking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [98, 111, 111, 107, 105, 110, 103]
+              },
+              {
+                "kind": "account",
+                "path": "property"
+              },
+              {
+                "kind": "account",
+                "path": "client"
+              },
+              {
+                "kind": "arg",
+                "path": "check_in"
+              }
+            ]
+          }
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "booking_days",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98, 111, 111, 107, 105, 110, 103, 95, 100, 97, 121, 115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "property"
+              },
+              {
+                "kind": "arg",
+                "path": "check_in"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "check_in",
+          "type": "i64"
+        },
+        {
+          "name": "check_out",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "deposit_funds",
+      "discriminator": [202, 39, 52, 211, 53, 20, 250, 88],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "user_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        },
+        {
+          "name": "sender_token_account"
+        },
+        {
+          "name": "treasury",
+          "writable": true
+        },
+        {
+          "name": "mint",
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "host_pending_accept",
+      "discriminator": [122, 146, 36, 188, 177, 48, 157, 9],
+      "accounts": [
+        {
+          "name": "host",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "property_host",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "property_host.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "host"
+              }
+            ]
+          }
+        },
+        {
+          "name": "booking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [98, 111, 111, 107, 105, 110, 103]
+              },
+              {
+                "kind": "account",
+                "path": "booking.property",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.guest",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.check_in",
+                "account": "Booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "host_pending_reject",
+      "discriminator": [189, 90, 184, 27, 163, 251, 25, 50],
+      "accounts": [
+        {
+          "name": "host",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "property_host",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "property_host.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "host"
+              }
+            ]
+          }
+        },
+        {
+          "name": "guest",
+          "docs": [
+            "We don't want to pass lamports to the host because it didn't create the booking",
+            "The guest has the responsability to send the money from the PDA to its wallet until I find a way to avoit",
+            "adding many accounts in this instruction"
+          ],
+          "writable": true
+        },
+        {
+          "name": "booking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [98, 111, 111, 107, 105, 110, 103]
+              },
+              {
+                "kind": "account",
+                "path": "booking.property",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.guest",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.check_in",
+                "account": "Booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        },
+        {
+          "name": "booking_days",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98, 111, 111, 107, 105, 110, 103, 95, 100, 97, 121, 115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "booking_days.property",
+                "account": "BookingDays"
+              },
+              {
+                "kind": "account",
+                "path": "booking_days"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize_contract",
+      "discriminator": [181, 192, 35, 141, 212, 113, 138, 94],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury_pda",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [116, 114, 101, 97, 115, 117, 114, 121]
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury_token_account",
+          "docs": [
+            "Token account controlled by treasury_pda. Holds user guarantee deposits."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116, 114, 101, 97, 115, 117, 114, 121, 95, 118, 97, 117, 108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "platform_vault_pda",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112, 108, 97, 116, 102, 111, 114, 109, 95, 118, 97, 117, 108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "platform_vault_token_account",
+          "docs": [
+            "Token account controlled by platform_vault_pda. Holds platform fees."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112, 108, 97, 116, 102, 111, 114, 109, 95, 118, 97, 117, 108,
+                  116, 95, 116, 111, 107, 101, 110
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "initial_data",
+          "type": {
+            "defined": {
+              "name": "InitialConfig"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "open_dispute",
+      "discriminator": [137, 25, 99, 119, 23, 223, 161, 42],
+      "accounts": [
+        {
+          "name": "caller",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "user_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "user_profile.owner",
+                "account": "UserProfile"
+              }
+            ]
+          }
+        },
+        {
+          "name": "booking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [98, 111, 111, 107, 105, 110, 103]
+              },
+              {
+                "kind": "account",
+                "path": "booking.property",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.guest",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.check_in",
+                "account": "Booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "dispute",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [100, 105, 115, 112, 117, 116, 101]
+              },
+              {
+                "kind": "account",
+                "path": "booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "reason",
+          "type": {
+            "defined": {
+              "name": "DisputeReason"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "penalize_user",
+      "discriminator": [4, 118, 74, 208, 212, 28, 119, 50],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        },
+        {
+          "name": "penalized_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "penalized_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "penalized_profile.owner",
+                "account": "UserProfile"
+              }
+            ]
+          }
+        },
+        {
+          "name": "affected_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "affected_wallet"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6, 221, 246, 225, 215, 101, 161, 147, 217, 203, 225, 70, 206,
+                  235, 121, 172, 28, 180, 133, 237, 95, 91, 55, 145, 58, 140,
+                  245, 133, 126, 255, 0, 169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
+                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
+                219, 233, 248, 89
+              ]
+            }
+          }
+        },
+        {
+          "name": "affected_wallet"
+        },
+        {
+          "name": "treasury_token_account",
+          "writable": true
+        },
+        {
+          "name": "treasury_pda",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [116, 114, 101, 97, 115, 117, 114, 121]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint",
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        }
+      ],
+      "args": [
+        {
+          "name": "severity",
+          "type": {
+            "defined": {
+              "name": "PenaltySeverity"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "register_property",
+      "discriminator": [25, 115, 131, 71, 59, 22, 25, 16],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "user_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "property",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [112, 114, 111, 112, 101, 114, 116, 121]
+              },
+              {
+                "kind": "account",
+                "path": "user_profile"
+              },
+              {
+                "kind": "account",
+                "path": "user_profile.listing_count",
+                "account": "UserProfile"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "price_per_night",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "register_user",
+      "discriminator": [2, 241, 150, 223, 99, 214, 116, 97],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "arg",
+                "path": "dni_hash"
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "dni_hash",
+          "type": {
+            "array": ["u8", 32]
+          }
+        }
+      ]
+    },
+    {
+      "name": "remove_admin",
+      "discriminator": [74, 202, 71, 106, 252, 31, 72, 183],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "admin_to_remove",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "resolve_dispute",
+      "discriminator": [231, 6, 202, 6, 96, 103, 12, 230],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        },
+        {
+          "name": "booking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [98, 111, 111, 107, 105, 110, 103]
+              },
+              {
+                "kind": "account",
+                "path": "booking.property",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.guest",
+                "account": "Booking"
+              },
+              {
+                "kind": "account",
+                "path": "booking.check_in",
+                "account": "Booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "dispute",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [100, 105, 115, 112, 117, 116, 101]
+              },
+              {
+                "kind": "account",
+                "path": "booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [101, 115, 99, 114, 111, 119]
+              },
+              {
+                "kind": "account",
+                "path": "booking"
+              }
+            ]
+          }
+        },
+        {
+          "name": "host_token_account",
+          "writable": true
+        },
+        {
+          "name": "guest_token_account",
+          "writable": true
+        },
+        {
+          "name": "platform_vault_token_account",
+          "writable": true
+        },
+        {
+          "name": "mint",
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "host_share_bps",
+          "type": "u16"
+        },
+        {
+          "name": "rejected",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "set_host_status",
+      "discriminator": [127, 70, 76, 106, 152, 218, 71, 254],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "user_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "status",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "update_property_price",
+      "discriminator": [26, 120, 255, 136, 9, 83, 139, 105],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "user_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "property",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [112, 114, 111, 112, 101, 114, 116, 121]
+              },
+              {
+                "kind": "account",
+                "path": "user_profile"
+              },
+              {
+                "kind": "account",
+                "path": "property.listing_id",
+                "account": "Property"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "new_price_per_night",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "verify_identity",
+      "discriminator": [177, 162, 9, 111, 44, 84, 80, 21],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "user_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "user_profile.owner",
+                "account": "UserProfile"
+              }
+            ]
+          }
+        },
+        {
+          "name": "gateway_token",
+          "docs": [
+            "When Civic is live, this account will be validated against the",
+            "user's wallet using the civic-gateway program CPI."
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdraw_guarantee",
+      "discriminator": [90, 175, 173, 229, 183, 148, 41, 242],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [117, 115, 101, 114]
+              },
+              {
+                "kind": "account",
+                "path": "user_profile.dni",
+                "account": "UserProfile"
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury_token_account",
+          "docs": ["Treasury token account — source of the withdrawal."],
+          "writable": true
+        },
+        {
+          "name": "treasury_pda",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [116, 114, 101, 97, 115, 117, 114, 121]
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_token_account",
+          "docs": ["Destination: the user's own USDC token account."],
+          "writable": true
+        },
+        {
+          "name": "mint",
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Booking",
+      "discriminator": [147, 50, 61, 138, 208, 21, 254, 156]
+    },
+    {
+      "name": "BookingDays",
+      "discriminator": [134, 102, 203, 81, 137, 194, 64, 222]
+    },
+    {
+      "name": "Dispute",
+      "discriminator": [36, 49, 241, 67, 40, 36, 241, 74]
+    },
+    {
+      "name": "PlatformConfig",
+      "discriminator": [160, 78, 128, 0, 248, 83, 230, 160]
+    },
+    {
+      "name": "Property",
+      "discriminator": [195, 247, 69, 181, 195, 47, 152, 19]
+    },
+    {
+      "name": "UserProfile",
+      "discriminator": [32, 37, 119, 205, 179, 180, 13, 194]
+    }
+  ],
+  "events": [
+    {
+      "name": "BookingUpdateStatus",
+      "discriminator": [104, 65, 139, 158, 141, 74, 188, 149]
+    },
+    {
+      "name": "NewBookingEvent",
+      "discriminator": [120, 129, 89, 161, 12, 8, 47, 178]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "UnauthorizedUser",
+      "msg": "Only the user can modify their profile"
+    },
+    {
+      "code": 6001,
+      "name": "UserBanned",
+      "msg": "User is banned"
+    },
+    {
+      "code": 6002,
+      "name": "UserNotVerified",
+      "msg": "User is not verified"
+    },
+    {
+      "code": 6003,
+      "name": "UserNotHost",
+      "msg": "User is not a host"
+    },
+    {
+      "code": 6004,
+      "name": "InsufficientDeposit",
+      "msg": "User does not have enough deposit to perform this action"
+    },
+    {
+      "code": 6005,
+      "name": "PropertyInActiveBooking",
+      "msg": "Property is currently in an active booking and cannot be modified"
+    },
+    {
+      "code": 6006,
+      "name": "UnauthorizedHost",
+      "msg": "Only the host can modify their property"
+    },
+    {
+      "code": 6007,
+      "name": "NoPropertiesToModify",
+      "msg": "No properties to modify"
+    },
+    {
+      "code": 6008,
+      "name": "UnauthorizedBooking",
+      "msg": "Only the client can make a booking for themselves"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidBookingStatus",
+      "msg": "Invalid booking status for this action"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidBookingDates",
+      "msg": "Invalid booking dates: check-in must be before check-out"
+    },
+    {
+      "code": 6011,
+      "name": "DatesAlreadyBooked",
+      "msg": "Dates already booked for this property"
+    },
+    {
+      "code": 6012,
+      "name": "DatesUnbooked",
+      "msg": "Dates unbooked this property"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidBookingDaysAccount",
+      "msg": "Invalid booking days account for the given dates"
+    },
+    {
+      "code": 6014,
+      "name": "HostCannotBookOwnProperty",
+      "msg": "Host cannot book their own property"
+    },
+    {
+      "code": 6015,
+      "name": "InvalidHost",
+      "msg": "Invalid host for this property"
+    },
+    {
+      "code": 6016,
+      "name": "InvalidMonth",
+      "msg": "Invalid month"
+    },
+    {
+      "code": 6017,
+      "name": "UnitializedBookingDays",
+      "msg": "Unitialized booking days accounts"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidBookingProperty",
+      "msg": "Invalid booking property"
+    },
+    {
+      "code": 6019,
+      "name": "TooEarlyToActivate",
+      "msg": "Too early to activate booking. Minimun 1 day left"
+    },
+    {
+      "code": 6020,
+      "name": "WrongGuessPassed",
+      "msg": "Wrong guess passed"
+    },
+    {
+      "code": 6021,
+      "name": "DisputeNotFound",
+      "msg": "Dispute not found"
+    },
+    {
+      "code": 6022,
+      "name": "UnauthorizedAdmin",
+      "msg": "Unauthorized admin action"
+    },
+    {
+      "code": 6023,
+      "name": "ConfigAlreadyInitialized",
+      "msg": "Configuration already initialized"
+    },
+    {
+      "code": 6024,
+      "name": "MaxAdminsReached",
+      "msg": "Max admins reached"
+    },
+    {
+      "code": 6025,
+      "name": "CannotRemoveSelf",
+      "msg": "Cannot remove self from admins"
+    },
+    {
+      "code": 6026,
+      "name": "AtLeastOneAdminRequired",
+      "msg": "At least one admin is required"
+    },
+    {
+      "code": 6027,
+      "name": "AdminNotFound",
+      "msg": "Admin to remove not found"
+    },
+    {
+      "code": 6028,
+      "name": "DepositTooLow",
+      "msg": "Deposit amount is below the minimum required"
+    },
+    {
+      "code": 6029,
+      "name": "InvalidTreasuryAccount",
+      "msg": "The treasury account is not the expected one"
+    },
+    {
+      "code": 6030,
+      "name": "InvalidTokenMint",
+      "msg": "The token mint does not match the configured USDC mint"
+    },
+    {
+      "code": 6031,
+      "name": "WithdrawWithActiveBooking",
+      "msg": "User has an active booking and cannot withdraw their guarantee"
+    },
+    {
+      "code": 6032,
+      "name": "InsufficientDepositBalance",
+      "msg": "Insufficient guarantee balance to withdraw the requested amount"
+    },
+    {
+      "code": 6033,
+      "name": "BookingNotActive",
+      "msg": "Booking must be in Active status to complete the stay"
+    },
+    {
+      "code": 6034,
+      "name": "AlreadyVerified",
+      "msg": "User is already verified"
+    },
+    {
+      "code": 6035,
+      "name": "NotAPartyToBooking",
+      "msg": "Caller is not a party to this booking"
+    },
+    {
+      "code": 6036,
+      "name": "BookingNotInDispute",
+      "msg": "Booking must be in Disputed status to resolve"
+    },
+    {
+      "code": 6037,
+      "name": "InvalidResolutionShares",
+      "msg": "Host share must be between 0 and 10000 basis points"
+    },
+    {
+      "code": 6038,
+      "name": "InvalidRetributionBps",
+      "msg": "Invalid retribution basis points"
+    },
+    {
+      "code": 6039,
+      "name": "InvalidFeeBps",
+      "msg": "Invalid fee basis points"
+    },
+    {
+      "code": 6040,
+      "name": "InvalidScore",
+      "msg": "Invalid score. Must be between 1 and 5"
+    },
+    {
+      "code": 6041,
+      "name": "InvalidTokenAccount",
+      "msg": "Invalid token account"
+    }
+  ],
+  "types": [
+    {
+      "name": "Booking",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "guest",
+            "type": "pubkey"
+          },
+          {
+            "name": "host",
+            "type": "pubkey"
+          },
+          {
+            "name": "property",
+            "type": "pubkey"
+          },
+          {
+            "name": "deposit",
+            "type": "u64"
+          },
+          {
+            "name": "check_in",
+            "type": "i64"
+          },
+          {
+            "name": "check_out",
+            "type": "i64"
+          },
+          {
+            "name": "days",
+            "type": "u64"
+          },
+          {
+            "name": "check_in_date",
+            "type": {
+              "defined": {
+                "name": "DateComponents"
+              }
+            }
+          },
+          {
+            "name": "check_out_date",
+            "type": {
+              "defined": {
+                "name": "DateComponents"
+              }
+            }
+          },
+          {
+            "name": "total_price",
+            "type": "u64"
+          },
+          {
+            "name": "review",
+            "type": "u8"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "BookingStatus"
+              }
+            }
+          },
+          {
+            "name": "escrow_bump",
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BookingDays",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "property",
+            "type": "pubkey"
+          },
+          {
+            "name": "occupied_days",
+            "type": "u32"
+          },
+          {
+            "name": "month",
+            "type": "u32"
+          },
+          {
+            "name": "year",
+            "type": "u32"
+          },
+          {
+            "name": "initialized",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BookingStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pending"
+          },
+          {
+            "name": "HostAccepted"
+          },
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Completed"
+          },
+          {
+            "name": "Cancelled"
+          },
+          {
+            "name": "Disputed"
+          },
+          {
+            "name": "DisputeResolved"
+          },
+          {
+            "name": "DisputeRejected"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BookingUpdateStatus",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "booking",
+            "type": "pubkey"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "BookingStatus"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "DateComponents",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "year",
+            "type": "u32"
+          },
+          {
+            "name": "month",
+            "type": "u32"
+          },
+          {
+            "name": "day",
+            "type": "u32"
+          },
+          {
+            "name": "year_month",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Dispute",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "booking",
+            "type": "pubkey"
+          },
+          {
+            "name": "opened_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "reason",
+            "type": {
+              "defined": {
+                "name": "DisputeReason"
+              }
+            }
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "DisputeStatus"
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DisputeReason",
+      "docs": [
+        "General category of a dispute — kept on-chain as a permanent record."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "PropertyNotAsDescribed"
+          },
+          {
+            "name": "CheckInIssues"
+          },
+          {
+            "name": "CheckOutIssues"
+          },
+          {
+            "name": "CleanlinessIssues"
+          },
+          {
+            "name": "NoShow"
+          },
+          {
+            "name": "DamageClaim"
+          },
+          {
+            "name": "RefundRequest"
+          },
+          {
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DisputeStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Open"
+          },
+          {
+            "name": "Resolved"
+          },
+          {
+            "name": "Rejected"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitialConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admins",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "retribution_bps_low",
+            "type": "u16"
+          },
+          {
+            "name": "retribution_bps_medium",
+            "type": "u16"
+          },
+          {
+            "name": "retribution_bps_high",
+            "type": "u16"
+          },
+          {
+            "name": "minimum_deposit",
+            "type": "u64"
+          },
+          {
+            "name": "fee_bps",
+            "docs": [
+              "Platform fee charged per completed booking, in basis points (e.g. 500 = 5%)."
+            ],
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NewBookingEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "guest",
+            "type": "pubkey"
+          },
+          {
+            "name": "booking",
+            "type": "pubkey"
+          },
+          {
+            "name": "property",
+            "type": "pubkey"
+          },
+          {
+            "name": "host",
+            "type": "pubkey"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "BookingStatus"
+              }
+            }
+          },
+          {
+            "name": "check_in",
+            "type": "i64"
+          },
+          {
+            "name": "check_out",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PenaltySeverity",
+      "docs": ["Severity level used by `penalize_user`."],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Low"
+          },
+          {
+            "name": "Medium"
+          },
+          {
+            "name": "High"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlatformConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admins",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury_bump",
+            "type": "u8"
+          },
+          {
+            "name": "platform_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "platform_vault_bump",
+            "type": "u8"
+          },
+          {
+            "name": "usdc_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "retribution_bps_low",
+            "type": "u16"
+          },
+          {
+            "name": "retribution_bps_medium",
+            "type": "u16"
+          },
+          {
+            "name": "retribution_bps_high",
+            "type": "u16"
+          },
+          {
+            "name": "minimum_deposit",
+            "type": "u64"
+          },
+          {
+            "name": "is_initialized",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Property",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "host",
+            "type": "pubkey"
+          },
+          {
+            "name": "listing_id",
+            "type": "u8"
+          },
+          {
+            "name": "price_per_night",
+            "type": "u64"
+          },
+          {
+            "name": "hash_state",
+            "type": "string"
+          },
+          {
+            "name": "booking_active",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserProfile",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "deposit",
+            "type": "u64"
+          },
+          {
+            "name": "deposit_timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "dni",
+            "type": {
+              "array": ["u8", 32]
+            }
+          },
+          {
+            "name": "is_verified",
+            "type": "bool"
+          },
+          {
+            "name": "token_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_banned",
+            "type": "bool"
+          },
+          {
+            "name": "active_booking",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "host_reviews",
+            "type": "u32"
+          },
+          {
+            "name": "total_score_host",
+            "type": "u64"
+          },
+          {
+            "name": "client_reviews",
+            "type": "u32"
+          },
+          {
+            "name": "total_score_client",
+            "type": "u64"
+          },
+          {
+            "name": "hosted_stays",
+            "type": "u32"
+          },
+          {
+            "name": "completed_stays",
+            "type": "u32"
+          },
+          {
+            "name": "is_host",
+            "type": "bool"
+          },
+          {
+            "name": "low_infractions",
+            "type": "u8"
+          },
+          {
+            "name": "medium_infractions",
+            "type": "u8"
+          },
+          {
+            "name": "high_infractions",
+            "type": "u8"
+          },
+          {
+            "name": "listing_count",
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

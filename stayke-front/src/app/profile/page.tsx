@@ -26,6 +26,10 @@ import { propertyService } from "@/src/services/propertyService";
 import { mapBackendPropertyToListing } from "@/src/helpers/mapProperty";
 import type { ListingCardProps } from "@/src/types/ListingCards";
 import { Loader2 } from "lucide-react";
+import { useDeposit } from "@/src/Hooks/solana/useDeposit";
+import { hashString } from "@/src/helpers/crypto";
+import { address as solanaAddress, type Address } from "@solana/kit";
+
 
 export default function ProfilePage() {
   const { user, isRegistered, isLoading, logout } = useAuth();
@@ -36,6 +40,8 @@ export default function ProfilePage() {
   const { balance, isLoading: loadingBalance } = useSolBalance(address);
   const { balance: usdcBalance, isLoading: loadingUsdc } = useTokenBalance(address);
   const { isRegistered: isOnChain, isLoading: loadingOnChain } = useUserOnChain(user?.pdaKey);
+  const { deposit: depositOnChain, loading: depositLoading } = useDeposit();
+
 
   const [myProperties, setMyProperties] = useState<ListingCardProps[]>([]);
   const [loadingProps, setLoadingProps] = useState(false);
@@ -63,13 +69,34 @@ export default function ProfilePage() {
   const handleInitOnChain = async () => {
     if (!user) return;
     try {
-      await solanaService.initATA(address);
-      window.location.reload(); // Quick refresh to update balance
+      // 1. Initialize ATA and get some mock USDC (Backend helper)
+      const res = await solanaService.initATA(user.wallet);
+      const usdcMint = (res as any).mint;
+      
+      // 2. Hash DNI
+      const dniHash = await hashString(user.dni);
+
+      // 3. Deposit guarantee (On-chain)
+      // For this example, we assume 100 USDC is the guarantee
+      // The user needs an ATA. Usually backend mints to it in initATA.
+      // We'll use a mocked amount based on typical platform config
+      const depositAmount = 100_000_000n; // 100 USDC (6 decimals) assuming 100 USDC is configured
+      
+      await depositOnChain(
+        dniHash,
+        depositAmount,
+        solanaAddress(address), // senderAddress
+        usdcMint
+      );
+
+
+      window.location.reload(); 
     } catch (error) {
       console.error("Error initializing on-chain:", error);
       alert("Error al inicializar la cuenta en cadena. Verifica tu conexión.");
     }
   };
+
 
   if (isLoading || !user) {
     return (

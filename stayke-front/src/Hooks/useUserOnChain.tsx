@@ -1,47 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { rpc } from "../client/rpc";
+import { address } from "@solana/kit";
 
 /**
- * Hook to check if a user is registered on-chain.
- * Uses the pdaKey from the database to look for the account on devnet.
+ * Hook to check if a user is registered on-chain using Solana Kit v2 RPC.
  */
 export const useUserOnChain = (pdaKey: string | null | undefined) => {
   const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
   const [isLoading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const checkOnChain = useCallback(async () => {
     if (!pdaKey) {
       setIsRegistered(false);
       return;
     }
 
-    const checkOnChain = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch("https://api.devnet.solana.com", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: 1,
-            method: "getAccountInfo",
-            params: [pdaKey, { encoding: "base64" }],
-          }),
-        });
-
-        const data = await res.json();
-        setIsRegistered(!!data.result?.value);
-      } catch (error) {
-        console.error("useUserOnChain error:", error);
-        setIsRegistered(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkOnChain();
+    setLoading(true);
+    try {
+      const res = await rpc.getAccountInfo(address(pdaKey)).send();
+      setIsRegistered(!!res.value);
+    } catch (error) {
+      console.error("useUserOnChain error:", error);
+      setIsRegistered(null);
+    } finally {
+      setLoading(false);
+    }
   }, [pdaKey]);
 
-  return { isRegistered, isLoading };
+  useEffect(() => {
+    checkOnChain();
+  }, [checkOnChain]);
+
+  return { isRegistered, isLoading, refresh: checkOnChain };
 };

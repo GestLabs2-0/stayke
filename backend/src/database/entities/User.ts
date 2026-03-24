@@ -48,7 +48,7 @@ export class User extends CoreEntity {
   @Column({ length: 20, nullable: true, type: "varchar" })
   phone?: string;
 
-  @Column({ length: 500, nullable: true, type: "varchar" })
+  @Column({ nullable: true, type: "text" })
   profileImage?: string;
 
   @OneToMany(() => Property, (property: Property) => property.owner)

@@ -19,6 +19,7 @@ export interface User {
   reputation: number;
   reviews?: Review[];
   pdaKey?: string;
+  dni: string;
 }
 export interface RegisterPayload {
   firstName: string;
@@ -30,7 +31,7 @@ export interface RegisterPayload {
   wallet: string;
   isHost: boolean;
   roles: string[];
-  image: File | null;
+  image: string;
 }
 
 export interface AuthContextType {

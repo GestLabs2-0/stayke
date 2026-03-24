@@ -1,5 +1,5 @@
-import type { BackendUser } from "@/src/types/api";
-import type { User } from "@/src/types/AuthContex";
+import type { BackendUser } from "../types/api";
+import type { User } from "../types/AuthContex";
 
 /**
  * Adapta el modelo de usuario del backend al modelo usado en el AuthContext.
@@ -16,4 +16,5 @@ export const mapBackendUserToUser = (backendUser: BackendUser): User => ({
   phone: backendUser.phone,
   image: backendUser.profileImage,
   pdaKey: backendUser.pdaKey,
+  dni: backendUser.dni,
 });

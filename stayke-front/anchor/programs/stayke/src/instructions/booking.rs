@@ -691,7 +691,7 @@ pub fn ins_complete_stay(ctx: Context<CompleteStay>) -> Result<()> {
             mint: ctx.accounts.mint.to_account_info(),
         };
         let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info().key.clone(),
+            ctx.accounts.token_program.key(),
             cpi_accounts,
             booking_seeds,
         );
@@ -706,7 +706,7 @@ pub fn ins_complete_stay(ctx: Context<CompleteStay>) -> Result<()> {
             mint: ctx.accounts.mint.to_account_info(),
         };
         let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info().key.clone(),
+            ctx.accounts.token_program.key(),
             cpi_accounts,
             booking_seeds,
         );
@@ -718,11 +718,8 @@ pub fn ins_complete_stay(ctx: Context<CompleteStay>) -> Result<()> {
         destination: ctx.accounts.client.to_account_info(),
         authority: booking.to_account_info(),
     };
-    let cpi_ctx = CpiContext::new_with_signer(
-        ctx.accounts.token_program.to_account_info().key.clone(),
-        cpi_close,
-        booking_seeds,
-    );
+    let cpi_ctx =
+        CpiContext::new_with_signer(ctx.accounts.token_program.key(), cpi_close, booking_seeds);
     token_interface::close_account(cpi_ctx)?;
 
     Ok(())
@@ -769,7 +766,7 @@ pub struct CloseBooking<'info> {
 }
 
 pub fn ins_close_booking(ctx: Context<CloseBooking>, score: u8) -> Result<()> {
-    require!(score >= 1 && score <= 5, StaykeErrors::InvalidScore);
+    require!((1..=5).contains(&score), StaykeErrors::InvalidScore);
 
     let booking = &ctx.accounts.booking;
     let booking_key = booking.key();

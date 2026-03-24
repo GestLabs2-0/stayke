@@ -1,46 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { rpc } from "../client/rpc";
+import { address } from "@solana/kit";
 
-export const useSolBalance = (address: string) => {
+/**
+ * Hook to get the SOL balance of an address using Solana Kit v2 RPC.
+ */
+export const useSolBalance = (addressString: string) => {
   const [balance, setBalance] = useState<number | null>(null);
   const [isLoading, setLoading] = useState(false);
 
+  const fetchBalance = useCallback(async () => {
+    if (!addressString) return;
+    setLoading(true);
+    try {
+      const res = await rpc.getBalance(address(addressString)).send();
+      // Balance is in lamports → divide by 1_000_000_000 for SOL
+      const sol = Number(res.value) / 1_000_000_000;
+      setBalance(sol);
+    } catch (error) {
+      console.error("useSolBalance error:", error);
+      setBalance(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [addressString]);
+
   useEffect(() => {
-    if (!address) return;
-
-    const fetchBalance = async () => {
-      setLoading(true);
-      try {
-        // Devnet RPC
-        const res = await fetch("https://api.devnet.solana.com", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: 1,
-            method: "getBalance",
-            params: [address],
-          }),
-        });
-
-        const data = await res.json();
-        // El balance viene en lamports → dividir por 1_000_000_000 para SOL
-        const sol = data.result?.value / 1_000_000_000;
-        setBalance(sol ?? 0);
-      } catch {
-        setBalance(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchBalance();
 
-    // Refresca cada 30 segundos
+    // Refresh every 30 seconds
     const interval = setInterval(fetchBalance, 30_000);
     return () => clearInterval(interval);
-  }, [address]);
+  }, [fetchBalance]);
 
-  return { balance, isLoading };
+  return { balance, isLoading, refresh: fetchBalance };
 };

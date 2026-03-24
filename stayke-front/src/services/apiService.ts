@@ -24,9 +24,10 @@ class ApiService {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      
-      let errorMsg = errorData.message || `HTTP error! status: ${response.status}`;
-      
+
+      let errorMsg =
+        errorData.message || `HTTP error! status: ${response.status}`;
+
       // Si hay errores de validación específicos (como en la imagen del error)
       if (errorData.errors) {
         const details = Object.entries(errorData.errors)
@@ -34,11 +35,12 @@ class ApiService {
           .join("\n");
         errorMsg += `\n${details}`;
       }
-      
+
       throw new Error(errorMsg);
     }
 
-    return response.json();
+    const data = await response.json();
+    return data as ApiResponse<T>;
   }
 
   // Exponer métodos HTTP

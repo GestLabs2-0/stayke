@@ -52,7 +52,7 @@ pub struct CreateBooking<'info> {
         init,
         payer = client,
         space = 8 + Booking::INIT_SPACE,
-        seeds = [b"booking", property.key().as_ref(), client.key().as_ref(), check_in.to_le_bytes().as_ref()],
+        seeds = [b"booking", property.key().as_ref(), client_profile.key().as_ref(), check_in.to_le_bytes().as_ref()],
         bump
     )]
     pub booking: Account<'info, Booking>,

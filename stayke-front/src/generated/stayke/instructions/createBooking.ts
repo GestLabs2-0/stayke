@@ -225,7 +225,7 @@ export async function getCreateBookingInstructionAsync<
           new Uint8Array([98, 111, 111, 107, 105, 110, 103]),
         ),
         getAddressEncoder().encode(expectAddress(accounts.property.value)),
-        getAddressEncoder().encode(expectAddress(accounts.client.value)),
+        getAddressEncoder().encode(expectAddress(accounts.clientProfile.value)),
         getI64Encoder().encode(expectSome(args.checkIn)),
       ],
     });

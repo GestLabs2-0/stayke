@@ -2110,31 +2110,13 @@
           if (!propStr) throw new Error("Property PDA is required");
           if (!checkInStr) throw new Error("check_in timestamp is required");
 
-          // Calcula year_month igual que Rust: year * 100 + month (u32 little-endian)
-          const date = new Date(Number(checkInStr) * 1000);
-          const year = date.getUTCFullYear();
-          const month = date.getUTCMonth() + 1; // 1-12
-          const yearMonth = (year * 100 + month) >>> 0; // u32
-
-          // u32 little-endian (4 bytes)
-          const ymBytes = new Uint8Array(4);
-          ymBytes[0] = yearMonth & 0xff;
-          ymBytes[1] = (yearMonth >> 8) & 0xff;
-          ymBytes[2] = (yearMonth >> 16) & 0xff;
-          ymBytes[3] = (yearMonth >> 24) & 0xff;
-
           const seeds = [
             Buffer.from("booking_days"),
             new PublicKey(propStr).toBytes(),
-            ymBytes,
+            i64ToLeBytes(checkInStr),
           ];
 
           const [pda, bump] = PublicKey.findProgramAddressSync(seeds, pid);
-
-          // Muestra también el year_month calculado para verificar
-          document.getElementById("bd-bump").textContent =
-            `bump: ${bump} | year_month: ${yearMonth} (${year}-${String(month).padStart(2, "0")})`;
-
           showPDAResult(
             "bd-addr",
             "bd-bump",
@@ -2143,7 +2125,7 @@
             bump
           );
           log(
-            `booking_days PDA (year_month=${yearMonth}): ${pda.toString()}`,
+            `booking_days PDA (check_in=${checkInStr}): ${pda.toString()}`,
             "ok"
           );
         } catch (e) {

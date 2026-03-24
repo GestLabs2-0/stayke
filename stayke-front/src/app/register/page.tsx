@@ -45,7 +45,7 @@ export const Register = () => {
 
   const totalSteps = STEPS.length;
 
-  const onChange = (field: keyof RegisterFormData, value: any) => {
+  const onChange = (field: keyof RegisterFormData, value: unknown) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -67,7 +67,8 @@ export const Register = () => {
         form.lastName,
         form.email,
         form.dni,
-        dniHash
+        dniHash,
+        form.isHost
       );
 
       if (res) {

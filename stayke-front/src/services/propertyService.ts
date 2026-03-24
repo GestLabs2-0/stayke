@@ -5,16 +5,27 @@ import type {
   CreatePropertyPayload,
 } from "@/src/types/api";
 
+interface RawBackendProperty extends Omit<BackendProperty, "title" | "description" | "location"> {
+  nombre: string;
+  comentarios?: string;
+  ubicacion: string;
+}
+
 class PropertyService {
   /**
    * Lista todas las propiedades disponibles.
    * GET /api-v1/properties
    */
   async listAllProperties(): Promise<BackendProperty[]> {
-    const res = await apiService.get<BackendProperty[]>(
+    const res = await apiService.get<RawBackendProperty[]>(
       API_CONFIG.ENDPOINTS.PROPERTIES
     );
-    return res.data;
+    return res.data.map((prop) => ({
+      ...prop,
+      title: prop.nombre,
+      description: prop.comentarios,
+      location: prop.ubicacion,
+    }));
   }
 
   /**
@@ -22,10 +33,15 @@ class PropertyService {
    * GET /api-v1/properties/user/:wallet
    */
   async listPropertiesByUser(wallet: string): Promise<BackendProperty[]> {
-    const res = await apiService.get<BackendProperty[]>(
+    const res = await apiService.get<RawBackendProperty[]>(
       API_CONFIG.ENDPOINTS.PROPERTIES_BY_WALLET(wallet)
     );
-    return res.data;
+    return res.data.map((prop) => ({
+      ...prop,
+      title: prop.nombre,
+      description: prop.comentarios,
+      location: prop.ubicacion,
+    }));
   }
 
   /**
@@ -35,11 +51,24 @@ class PropertyService {
   async createProperty(
     payload: CreatePropertyPayload
   ): Promise<BackendProperty> {
-    const res = await apiService.post<BackendProperty>(
+    const backendPayload = {
+      ...payload,
+      nombre: payload.title,
+      comentarios: payload.description,
+      ubicacion: payload.location,
+    };
+
+    const res = await apiService.post<RawBackendProperty>(
       API_CONFIG.ENDPOINTS.PROPERTIES,
-      payload
+      backendPayload
     );
-    return res.data;
+
+    return {
+      ...res.data,
+      title: res.data.nombre,
+      description: res.data.comentarios,
+      location: res.data.ubicacion,
+    };
   }
 
   /**

@@ -35,6 +35,8 @@ export interface CreateUserPayload {
   profileImage?: string;
   isHost?: boolean;
   pdaKey?: string;
+  signature?: string;
+  message?: string;
 }
 
 // Entidad Property (conforme al backend)

@@ -3,7 +3,7 @@ import {
   type TransactionSigner,
   pipe,
   createTransactionMessage,
-  setTransactionMessageFeePayer,
+  setTransactionMessageFeePayerSigner,
   setTransactionMessageLifetimeUsingBlockhash,
   appendTransactionMessageInstruction,
   signTransactionMessageWithSigners,
@@ -31,7 +31,6 @@ import {
   getPenalizeUserInstructionAsync,
 } from "../generated/stayke/instructions";
 import {
-  getPdaUserProfile,
   getPdaProperty,
   getPdaConfig,
   getPdaTreasuryTokenAccount,
@@ -57,7 +56,7 @@ async function sendTransaction(
 
   const transactionMessage = pipe(
     createTransactionMessage({ version: 0 }),
-    (m) => setTransactionMessageFeePayer(signer.address, m),
+    (m) => setTransactionMessageFeePayerSigner(signer, m),
     (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
     (m) => appendTransactionMessageInstruction(instruction, m)
   );
@@ -107,18 +106,17 @@ export const staykeClient = {
    */
   async depositFunds(
     signer: TransactionSigner,
-    dniHash: Uint8Array,
+    userProfilePdaStr: string,
     amount: number | bigint,
     senderTokenAccount: string,
     usdcMint: string
   ) {
-    const userProfilePda = await getPdaUserProfile(dniHash, signer.address);
     const configPda = await getPdaConfig();
     const treasuryVaultPda = await getPdaTreasuryTokenAccount();
 
     const instruction = getDepositFundsInstruction({
       signer,
-      userProfile: userProfilePda[0],
+      userProfile: address(userProfilePdaStr),
       config: configPda[0],
       senderTokenAccount: address(senderTokenAccount),
       treasury: treasuryVaultPda[0],

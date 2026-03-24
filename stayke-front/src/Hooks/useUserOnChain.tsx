@@ -19,7 +19,7 @@ export const useUserOnChain = (pdaKey: string | null | undefined) => {
 
     setLoading(true);
     try {
-      const res = await rpc.getAccountInfo(address(pdaKey)).send();
+      const res = await rpc.getAccountInfo(address(pdaKey), { encoding: "base64" }).send();
       setIsRegistered(!!res.value);
     } catch (error) {
       console.error("useUserOnChain error:", error);

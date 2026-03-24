@@ -3,8 +3,7 @@ import type { RequestValidatedAPI, ResponseAPI } from "../typescript/express.js"
 
 import { UserRole } from "../database/entities/enums/UserRole.js";
 import { getUserRepository } from "../database/repositories/UserRepository.js";
-import { initUserPDA } from "../solana/userProgram.js";
-import { hashDni, hexToU8Array } from "../utils/hashDni.js";
+import { hashDni } from "../utils/hashDni.js";
 import { responseAndLogger } from "../utils/responseAndLogger.js";
 
 // ─── GET /api/v1/users ───────────────────────────────────────────────────────
@@ -23,6 +22,7 @@ export const listAllUsers = async (_req: RequestValidatedAPI, res: ResponseAPI):
         id: true,
         isActive: true,
         nombre: true,
+        pdaKey: true,
         phone: true,
         profileImage: true,
         roles: true,
@@ -47,7 +47,7 @@ export const listAllUsers = async (_req: RequestValidatedAPI, res: ResponseAPI):
 export const createUser = async (req: RequestValidatedAPI<CreateUserBody>, res: ResponseAPI): Promise<void> => {
   try {
     const repo = getUserRepository();
-    const { address, apellido, dni, email, isHost, nombre, phone, profileImage, wallet } = req.body;
+    const { address, apellido, dni, email, isHost, nombre, pdaKey, phone, profileImage, wallet } = req.body;
 
     // Wallet uniqueness check
     const existingByWallet = await repo.findOne({ where: { wallet } });
@@ -68,12 +68,8 @@ export const createUser = async (req: RequestValidatedAPI<CreateUserBody>, res: 
       }
     }
 
-    // Initialize PDA on-chain (mock for now, only generates pdaKey)
-    let pdaKey: string | undefined;
-    if (dniHash) {
-      const result = await initUserPDA(wallet, hexToU8Array(dniHash));
-      pdaKey = result.pdaKey;
-    }
+    // Use PDA generated and sent by frontend
+    const finalPdaKey = pdaKey;
 
     // Determine initial roles
     let roles: UserRole[] = [UserRole.CLIENT];
@@ -85,7 +81,7 @@ export const createUser = async (req: RequestValidatedAPI<CreateUserBody>, res: 
       dni: dniHash ?? "", // stored as SHA-256 hash
       email,
       nombre,
-      pdaKey,
+      pdaKey: finalPdaKey,
       phone,
       profileImage,
       roles,
@@ -109,7 +105,7 @@ export const createUser = async (req: RequestValidatedAPI<CreateUserBody>, res: 
 export const createAdminUser = async (req: RequestValidatedAPI<CreateAdminBody>, res: ResponseAPI): Promise<void> => {
   try {
     const repo = getUserRepository();
-    const { address, apellido, dni, email, nombre, phone, profileImage, wallet } = req.body;
+    const { address, apellido, dni, email, nombre, pdaKey, phone, profileImage, wallet } = req.body;
 
     // Wallet uniqueness check
     const existingByWallet = await repo.findOne({ where: { wallet } });
@@ -130,12 +126,8 @@ export const createAdminUser = async (req: RequestValidatedAPI<CreateAdminBody>,
       }
     }
 
-    // Initialize PDA on-chain (mock for now, generating pdaKey)
-    let pdaKey: string | undefined;
-    if (dniHash) {
-      const result = await initUserPDA(wallet, hexToU8Array(dniHash));
-      pdaKey = result.pdaKey;
-    }
+    // Use PDA generated and sent by frontend
+    const finalPdaKey = pdaKey;
 
     const user = repo.create({
       address,
@@ -143,7 +135,7 @@ export const createAdminUser = async (req: RequestValidatedAPI<CreateAdminBody>,
       dni: dniHash ?? "", // stored as SHA-256 hash
       email,
       nombre,
-      pdaKey,
+      pdaKey: finalPdaKey,
       phone,
       profileImage,
       roles: [UserRole.ADMIN],
@@ -178,6 +170,7 @@ export const getUserByWallet = async (req: RequestValidatedAPI<unknown, { wallet
         infractions: true,
         isActive: true,
         nombre: true,
+        pdaKey: true,
         phone: true,
         profileImage: true,
         roles: true,
@@ -229,11 +222,10 @@ export const updateUser = async (req: RequestValidatedAPI<UpdateUserBody, { wall
         return;
       }
 
-      // If DNI changed, regenerate PDA
-      if (dniHash) {
-        const result = await initUserPDA(wallet, hexToU8Array(dniHash));
-        user.pdaKey = result.pdaKey;
-      }
+      // If DNI changed, regenerate PDA - this should be handled by frontend and smart contract logic,
+      // but if we must, we'd need the frontend to supply the new pdaKey. For now, since DNI is part
+      // of the seed, changing it without migrating the on-chain data breaks the link.
+      // DNI updates that change the PDA should probably be forbidden, or require a signed transaction.
     }
 
     user.email = email;

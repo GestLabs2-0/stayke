@@ -13,7 +13,7 @@ export const useDeposit = () => {
   const [error, setError] = useState<string | null>(null);
 
   const deposit = async (
-    dniHash: Uint8Array,
+    userProfilePdaStr: string,
     amount: number | bigint,
     senderTokenAccount: string,
     usdcMint: string
@@ -29,7 +29,7 @@ export const useDeposit = () => {
     try {
       const signature = await staykeClient.depositFunds(
         signer,
-        dniHash,
+        userProfilePdaStr,
         amount,
         senderTokenAccount,
         usdcMint

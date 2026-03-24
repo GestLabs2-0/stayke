@@ -11,6 +11,19 @@ import {
 import { PROGRAM_ID } from "./codama";
 
 const programId = address(PROGRAM_ID);
+const ATOKEN_PROGRAM_ID = address("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
+const TOKEN_PROGRAM_ID = address("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+
+export async function getAtaAddress(wallet: string, mint: string) {
+  return await getProgramDerivedAddress({
+    programAddress: ATOKEN_PROGRAM_ID,
+    seeds: [
+      getAddressEncoder().encode(address(wallet)),
+      getAddressEncoder().encode(TOKEN_PROGRAM_ID),
+      getAddressEncoder().encode(address(mint)),
+    ],
+  });
+}
 
 export async function getPdaConfig() {
   return await getProgramDerivedAddress({

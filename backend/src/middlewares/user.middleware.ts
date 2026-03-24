@@ -19,9 +19,12 @@ export interface CreateUserBody {
   dni?: string;
   email?: string;
   isHost?: boolean;
+  message?: string;
   nombre: string;
+  pdaKey?: string;
   phone?: string;
   profileImage?: string;
+  signature?: string;
   wallet: string;
 }
 
@@ -29,17 +32,17 @@ export interface CreateUserBody {
  * Validates the request body for POST /api/v1/users.
  * Verifies that all required fields are present and well-formed.
  */
-export const createUserRule = (
+export const createUserRule = async (
   req: RequestValidationAPI<CreateUserBody>,
   res: ResponseAPI,
   next: NextFunction,
-): void => {
+): Promise<void> => {
   if (!req.body) {
     responseAndLogger(res, "No se proporcionaron datos", 422);
     return;
   }
 
-  const { address, apellido, dni, email, nombre, phone, wallet } = req.body;
+  const { address, apellido, dni, email, message, nombre, phone, signature, wallet } = req.body;
   const errors: Record<string, string> = {};
 
   // wallet — obligatorio, debe ser una pubkey de Solana válida
@@ -108,6 +111,43 @@ export const createUserRule = (
 
   if (Object.keys(errors).length > 0) {
     responseAndLogger(res, "Datos de validación incorrectos", 422, errors);
+    return;
+  }
+
+  // ─── Verificación de sesión (mensaje firmado) ───
+  if (signature && message) {
+    try {
+      const bs58 = (await import("bs58")).default;
+      const nacl = (await import("tweetnacl")).default;
+      const { PublicKey } = await import("@solana/web3.js");
+
+      // El mensaje esperado debe contener la wallet enviada
+      const expectedMessage = `Welcome to Stayke! Please sign this message to register your account: ${wallet}`;
+
+      if (message !== expectedMessage) {
+        responseAndLogger(res, "El mensaje firmado no coincide con el esperado", 401);
+        return;
+      }
+
+      const verified = nacl.sign.detached.verify(
+        new TextEncoder().encode(message),
+        bs58.decode(signature),
+        new PublicKey(wallet).toBytes(),
+      );
+
+      if (!verified) {
+        responseAndLogger(res, "Firma de mensaje inválida. No se pudo verificar la propiedad de la wallet", 401);
+        return;
+      }
+    } catch (err: unknown) {
+      console.error("Signature verification error:", err);
+      responseAndLogger(res, "Error al verificar la firma del mensaje", 500);
+      return;
+    }
+  } else {
+    // Si no se pide obligatoriamente en el frontend, avisar. 
+    // Para cumplir el requisito, lo haremos obligatorio ahora.
+    responseAndLogger(res, "Se requiere la firma del mensaje para validar la sesión activa", 401);
     return;
   }
 
@@ -342,6 +382,7 @@ export interface CreateAdminBody {
   dni?: string;
   email?: string;
   nombre: string;
+  pdaKey?: string;
   phone?: string;
   profileImage?: string;
   wallet: string;

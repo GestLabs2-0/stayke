@@ -28,7 +28,7 @@ import type { ListingCardProps } from "@/src/types/ListingCards";
 import { Loader2 } from "lucide-react";
 import { useDeposit } from "@/src/Hooks/solana/useDeposit";
 import { hashString } from "@/src/helpers/crypto";
-import { address as solanaAddress, type Address } from "@solana/kit";
+import { getAtaAddress } from "@/src/client/pdas";
 
 
 export default function ProfilePage() {
@@ -40,7 +40,7 @@ export default function ProfilePage() {
   const { balance, isLoading: loadingBalance } = useSolBalance(address);
   const { balance: usdcBalance, isLoading: loadingUsdc } = useTokenBalance(address);
   const { isRegistered: isOnChain, isLoading: loadingOnChain } = useUserOnChain(user?.pdaKey);
-  const { deposit: depositOnChain, loading: depositLoading } = useDeposit();
+  const { deposit: depositOnChain } = useDeposit();
 
 
   const [myProperties, setMyProperties] = useState<ListingCardProps[]>([]);
@@ -66,34 +66,33 @@ export default function ProfilePage() {
       fetchMyProps();
     }
   }, [isRegistered, isLoading, user?.wallet, user?.isHost, router]);
-  const handleInitOnChain = async () => {
-    if (!user) return;
+  const handleDeposit = async () => {
+    if (!user || !user.pdaKey) {
+      alert("No PDA Key found in user profile. Please register again.");
+      return;
+    }
     try {
       // 1. Initialize ATA and get some mock USDC (Backend helper)
       const res = await solanaService.initATA(user.wallet);
-      const usdcMint = (res as any).mint;
+      const usdcMint = res.data.mint;
       
-      // 2. Hash DNI
-      const dniHash = await hashString(user.dni);
-
       // 3. Deposit guarantee (On-chain)
-      // For this example, we assume 100 USDC is the guarantee
-      // The user needs an ATA. Usually backend mints to it in initATA.
-      // We'll use a mocked amount based on typical platform config
-      const depositAmount = 100_000_000n; // 100 USDC (6 decimals) assuming 100 USDC is configured
+      const depositAmount = 1_000_000n; // 1 USDC (6 decimals)
       
+      // The sender needs an ATA.
+      const [senderAta] = await getAtaAddress(address, usdcMint);
+
       await depositOnChain(
-        dniHash,
+        user.pdaKey,
         depositAmount,
-        solanaAddress(address), // senderAddress
+        senderAta.toString(), // senderTokenAccount
         usdcMint
       );
 
-
       window.location.reload(); 
     } catch (error) {
-      console.error("Error initializing on-chain:", error);
-      alert("Error al inicializar la cuenta en cadena. Verifica tu conexión.");
+      console.error("Error depositing guarantee:", error);
+      alert("Error al intentar depositar la garantía en la cadena. Verifica tu conexión e inténtalo de nuevo.");
     }
   };
 
@@ -281,7 +280,7 @@ export default function ProfilePage() {
             
             {!isOnChain && (
               <button
-                onClick={handleInitOnChain}
+                onClick={handleDeposit}
                 className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity shadow-glow"
               >
                 Initialize Blockchain Profile
@@ -289,9 +288,20 @@ export default function ProfilePage() {
             )}
             
             {isOnChain && (
-              <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground bg-background/50 p-2 rounded-lg border border-border/30">
-                <Wallet className="h-3 w-3" />
-                <span className="truncate">{user.pdaKey}</span>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground bg-background/50 p-2 rounded-lg border border-border/30">
+                  <Wallet className="h-3 w-3" />
+                  <span className="truncate">{user.pdaKey}</span>
+                </div>
+                
+                {user.isHost && (
+                  <button
+                    onClick={handleDeposit}
+                    className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity shadow-glow mt-2"
+                  >
+                    Deposit Host Guarantee (1 USDC)
+                  </button>
+                )}
               </div>
             )}
           </div>

@@ -5,7 +5,7 @@ import type {
 import type { RequestValidatedAPI, ResponseAPI } from "../typescript/express.js";
 
 import { getPropertyRepository } from "../database/repositories/PropertyRepository.js";
-import { initPropertyPDA } from "../solana/propertyProgram.js";
+import { getUserRepository } from "../database/repositories/UserRepository.js";
 import { responseAndLogger } from "../utils/responseAndLogger.js";
 
 // ─── POST /api/v1/properties ────────────────────────────────────────────────
@@ -17,33 +17,34 @@ import { responseAndLogger } from "../utils/responseAndLogger.js";
 export const createProperty = async (req: RequestValidatedAPI<CreatePropertyBody>, res: ResponseAPI): Promise<void> => {
   try {
     const propRepo = getPropertyRepository();
-    const { comentarios, images, latitud, longitud, nombre, ownerWallet, pricePerNight, ubicacion } = req.body;
+    const { comentarios, images, latitud, longitud, nombre, ownerWallet, pdaKey, pricePerNight, ubicacion } = req.body;
 
-    // Get number of existing properties for this owner to use as counter for PDA
-    const ownerCount = await propRepo.count({
-      where: { owner: { wallet: ownerWallet } },
-    });
-
-    // Initialize PDA on-chain (mock for now, generating pdaKey)
-    // If frontend sent a pdaKey, we could use it, but following phase 4.3, we generate it on backend
-    const { pdaKey } = await initPropertyPDA(ownerWallet, ownerCount);
+    // PDA generation now happens on frontend to guarantee matching smart contract instances
+    const finalPdaKey = pdaKey;
 
     // PDAs are unique identifiers on-chain, must be unique in DB too
-    const existingPda = await propRepo.findOne({ where: { pdaKey } });
+    const existingPda = await propRepo.findOne({ where: { pdaKey: finalPdaKey } });
     if (existingPda) {
       responseAndLogger(res, "Ya existe una propiedad registrada con esta clave PDA", 409);
       return;
     }
 
-    // owner existence is already validated by createPropertyRule middleware
+    // The user was already validated in middleware, but we need their internal DB relation
+    const userRepo = getUserRepository();
+    const existingUser = await userRepo.findOne({ where: { wallet: ownerWallet } });
+    if (!existingUser) {
+      responseAndLogger(res, "Owner user not found", 404);
+      return;
+    }
+
     const property = propRepo.create({
       comentarios,
       images,
       latitud,
       longitud,
       nombre,
-      owner: { wallet: ownerWallet },
-      pdaKey,
+      owner: existingUser,
+      pdaKey: finalPdaKey,
       pricePerNight,
       ubicacion,
     });

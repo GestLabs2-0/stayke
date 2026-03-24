@@ -1227,6 +1227,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/bs58@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@types/bs58@npm:5.0.0"
+  dependencies:
+    bs58: "npm:*"
+  checksum: 10c0/056a4b74598bf6501029efe4ab31998130fd1a17c4dab22a8aef9c8da9f595340c8970bca66ab5ff341a883743b398dde05d6203411cf97f51a47ae1d1d3df92
+  languageName: node
+  linkType: hard
+
 "@types/chai@npm:^5.2.2":
   version: 5.2.3
   resolution: "@types/chai@npm:5.2.3"
@@ -1914,6 +1923,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"base-x@npm:^5.0.0":
+  version: 5.0.1
+  resolution: "base-x@npm:5.0.1"
+  checksum: 10c0/4ab6b02262b4fd499b147656f63ce7328bd5f895450401ce58a2f9e87828aea507cf0c320a6d8725389f86e8a48397562661c0bca28ef3276a22821b30f7a713
+  languageName: node
+  linkType: hard
+
 "base64-js@npm:^1.3.1":
   version: 1.5.1
   resolution: "base64-js@npm:1.5.1"
@@ -2032,6 +2048,15 @@ __metadata:
   dependencies:
     fill-range: "npm:^7.1.1"
   checksum: 10c0/7c6dfd30c338d2997ba77500539227b9d1f85e388a5f43220865201e407e076783d0881f2d297b9f80951b4c957fcf0b51c1d2d24227631643c3f7c284b0aa04
+  languageName: node
+  linkType: hard
+
+"bs58@npm:*, bs58@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "bs58@npm:6.0.0"
+  dependencies:
+    base-x: "npm:^5.0.0"
+  checksum: 10c0/61910839746625ee4f69369f80e2634e2123726caaa1da6b3bcefcf7efcd9bdca86603360fed9664ffdabe0038c51e542c02581c72ca8d44f60329fe1a6bc8f4
   languageName: node
   linkType: hard
 
@@ -5221,6 +5246,7 @@ __metadata:
     "@solana/spl-token": "npm:^0.4.14"
     "@solana/web3.js": "npm:1.98.4"
     "@tsconfig/node24": "npm:^24.0.4"
+    "@types/bs58": "npm:^5.0.0"
     "@types/cors": "npm:^2.8.19"
     "@types/express": "npm:^5.0.6"
     "@types/morgan": "npm:^1.9.10"
@@ -5232,6 +5258,7 @@ __metadata:
     "@vitest/coverage-v8": "npm:^4.0.18"
     "@vitest/eslint-plugin": "npm:^1.6.7"
     "@vitest/ui": "npm:^4.0.18"
+    bs58: "npm:^6.0.0"
     cors: "npm:^2.8.6"
     dotenv: "npm:^17.3.1"
     eslint: "npm:^10.1.0"
@@ -5246,6 +5273,7 @@ __metadata:
     shelljs: "npm:^0.10.0"
     ts-node-dev: "npm:^2.0.0"
     tsx: "npm:^4.21.0"
+    tweetnacl: "npm:^1.0.3"
     typeorm: "npm:^0.3.28"
     typescript: "npm:^5.9.3"
     typescript-eslint: "npm:^8.55.0"
@@ -5609,6 +5637,13 @@ __metadata:
   bin:
     tsx: dist/cli.mjs
   checksum: 10c0/f5072923cd8459a1f9a26df87823a2ab5754641739d69df2a20b415f61814322b751fa6be85db7c6ec73cf68ba8fac2fd1cfc76bdb0aa86ded984d84d5d2126b
+  languageName: node
+  linkType: hard
+
+"tweetnacl@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "tweetnacl@npm:1.0.3"
+  checksum: 10c0/069d9df51e8ad4a89fbe6f9806c68e06c65be3c7d42f0701cc43dba5f0d6064686b238bbff206c5addef8854e3ce00c643bff59432ea2f2c639feab0ee1a93f9
   languageName: node
   linkType: hard
 

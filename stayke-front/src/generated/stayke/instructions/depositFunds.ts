@@ -72,7 +72,7 @@ export type DepositFundsInstruction<
         ? ReadonlyAccount<TAccountConfig>
         : TAccountConfig,
       TAccountSenderTokenAccount extends string
-        ? ReadonlyAccount<TAccountSenderTokenAccount>
+        ? WritableAccount<TAccountSenderTokenAccount>
         : TAccountSenderTokenAccount,
       TAccountTreasury extends string
         ? WritableAccount<TAccountTreasury>
@@ -182,7 +182,7 @@ export async function getDepositFundsInstructionAsync<
     config: { value: input.config ?? null, isWritable: false },
     senderTokenAccount: {
       value: input.senderTokenAccount ?? null,
-      isWritable: false,
+      isWritable: true,
     },
     treasury: { value: input.treasury ?? null, isWritable: true },
     mint: { value: input.mint ?? null, isWritable: true },
@@ -296,7 +296,7 @@ export function getDepositFundsInstruction<
     config: { value: input.config ?? null, isWritable: false },
     senderTokenAccount: {
       value: input.senderTokenAccount ?? null,
-      isWritable: false,
+      isWritable: true,
     },
     treasury: { value: input.treasury ?? null, isWritable: true },
     mint: { value: input.mint ?? null, isWritable: true },
